@@ -1,0 +1,7 @@
+{
+  "status": "requires_real_model_run",
+  "experimentVersion": "m4.1",
+  "datasetVersion": "chunking-eval-v1",
+  "embeddingModel": "Alibaba-NLP/gte-multilingual-base",
+  "reason": "Official results are intentionally absent until the Colab notebook runs the real embedding model."
+}

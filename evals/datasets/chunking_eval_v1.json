@@ -1,0 +1,60 @@
+{
+  "version": "chunking-eval-v1",
+  "documents": [
+    {"documentId": "doc-tr-rrf", "language": "tr", "path": "documents/doc-tr-rrf.json"},
+    {"documentId": "doc-tr-guvenlik", "language": "tr", "path": "documents/doc-tr-guvenlik.json"},
+    {"documentId": "doc-tr-ek", "language": "tr", "path": "documents/doc-tr-ek.json"},
+    {"documentId": "doc-en-retrieval", "language": "en", "path": "documents/doc-en-retrieval.json"},
+    {"documentId": "doc-en-python", "language": "en", "path": "documents/doc-en-python.json"},
+    {"documentId": "doc-en-planning", "language": "en", "path": "documents/doc-en-planning.json"}
+  ],
+  "queries": [
+    {"queryId":"tr-rrf-01","documentId":"doc-tr-rrf","language":"tr","query":"RRF nedir?","relevantBlockIds":["tr-rrf-1"],"category":"factual"},
+    {"queryId":"tr-rrf-02","documentId":"doc-tr-rrf","language":"tr","query":"Sıralamaları birleştirme yöntemi hangi sorunu azaltır?","relevantBlockIds":["tr-rrf-2"],"category":"paraphrase"},
+    {"queryId":"tr-rrf-03","documentId":"doc-tr-rrf","language":"tr","query":"Kullanım Notu bölümünde retriever ve reranker nasıl ayrılır?","relevantBlockIds":["tr-rrf-3","tr-rrf-4"],"category":"heading_dependent"},
+    {"queryId":"tr-rrf-04","documentId":"doc-tr-rrf","language":"tr","query":"Ham skorlar neden toplanmaz ve bunun yerine ne korunur?","relevantBlockIds":["tr-rrf-1","tr-rrf-2"],"category":"cross_paragraph"},
+    {"queryId":"tr-rrf-05","documentId":"doc-tr-rrf","language":"tr","query":"Yoğun ile seyrek aramayı kaynaştırmak ne anlama gelir?","relevantBlockIds":["tr-rrf-1"],"category":"terminology_mismatch"},
+    {"queryId":"tr-rrf-06","documentId":"doc-tr-rrf","language":"tr","query":"Tekilleştirilmiş adaylarda hangi bilgiler saklanır?","relevantBlockIds":["tr-rrf-5"],"category":"morphology_heavy"},
+    {"queryId":"tr-rrf-07","documentId":"doc-tr-rrf","language":"tr","query":"Reranker hangi niteliği iyileştirir?","relevantBlockIds":["tr-rrf-4"],"category":"factual"},
+
+    {"queryId":"tr-sec-01","documentId":"doc-tr-guvenlik","language":"tr","query":"Yüklenen belgenin talimatları neden güvenilir değildir?","relevantBlockIds":["tr-sec-1"],"category":"factual"},
+    {"queryId":"tr-sec-02","documentId":"doc-tr-guvenlik","language":"tr","query":"Ayrıştırıcı hangi etkin içerikleri çalıştırmamalıdır?","relevantBlockIds":["tr-sec-2"],"category":"paraphrase"},
+    {"queryId":"tr-sec-03","documentId":"doc-tr-guvenlik","language":"tr","query":"Sahiplik başlığı altındaki filtreler nelerdir?","relevantBlockIds":["tr-sec-3","tr-sec-4"],"category":"heading_dependent"},
+    {"queryId":"tr-sec-04","documentId":"doc-tr-guvenlik","language":"tr","query":"Belge içeriğinin talimat sayılmaması ile erişim filtresi nasıl birlikte güvenlik sağlar?","relevantBlockIds":["tr-sec-1","tr-sec-4"],"category":"cross_paragraph"},
+    {"queryId":"tr-sec-05","documentId":"doc-tr-guvenlik","language":"tr","query":"Çalışma alanları arası veri görünürlüğü hangi risk olarak tanımlanır?","relevantBlockIds":["tr-sec-5"],"category":"terminology_mismatch"},
+    {"queryId":"tr-sec-06","documentId":"doc-tr-guvenlik","language":"tr","query":"Sızıntıların önlenmesi için sonuçlar hangi kimliklerle sınırlandırılır?","relevantBlockIds":["tr-sec-4","tr-sec-5"],"category":"morphology_heavy"},
+    {"queryId":"tr-sec-07","documentId":"doc-tr-guvenlik","language":"tr","query":"PDF JavaScript'i çalıştırılır mı?","relevantBlockIds":["tr-sec-2"],"category":"factual"},
+
+    {"queryId":"tr-chunk-01","documentId":"doc-tr-ek","language":"tr","query":"Yapı farkındalıklı parçalama hangi sırayı korur?","relevantBlockIds":["tr-morph-1"],"category":"factual"},
+    {"queryId":"tr-chunk-02","documentId":"doc-tr-ek","language":"tr","query":"Rastgele karakter penceresi ne zaman kullanılmalıdır?","relevantBlockIds":["tr-morph-2"],"category":"paraphrase"},
+    {"queryId":"tr-chunk-03","documentId":"doc-tr-ek","language":"tr","query":"Örtüşme başlığında bölümler arası geçiş hakkında ne söylenir?","relevantBlockIds":["tr-morph-3","tr-morph-4"],"category":"heading_dependent"},
+    {"queryId":"tr-chunk-04","documentId":"doc-tr-ek","language":"tr","query":"Uzun paragraf ve anlamsal sınır yokluğu nasıl ele alınır?","relevantBlockIds":["tr-morph-1","tr-morph-2"],"category":"cross_paragraph"},
+    {"queryId":"tr-chunk-05","documentId":"doc-tr-ek","language":"tr","query":"Token sınırı neden son çare olarak kullanılır?","relevantBlockIds":["tr-morph-2"],"category":"terminology_mismatch"},
+    {"queryId":"tr-chunk-06","documentId":"doc-tr-ek","language":"tr","query":"Parçalanmış belgelerin denetlenebilmesi için hangi aralık tutulur?","relevantBlockIds":["tr-morph-5"],"category":"morphology_heavy"},
+    {"queryId":"tr-chunk-07","documentId":"doc-tr-ek","language":"tr","query":"Örtüşme neyi korur?","relevantBlockIds":["tr-morph-4"],"category":"factual"},
+
+    {"queryId":"en-ret-01","documentId":"doc-en-retrieval","language":"en","query":"What does a retriever optimize?","relevantBlockIds":["en-ret-1"],"category":"factual"},
+    {"queryId":"en-ret-02","documentId":"doc-en-retrieval","language":"en","query":"Why should dense and lexical scores not be summed directly?","relevantBlockIds":["en-ret-2"],"category":"paraphrase"},
+    {"queryId":"en-ret-03","documentId":"doc-en-retrieval","language":"en","query":"What does the Context Building section preserve?","relevantBlockIds":["en-ret-3","en-ret-4"],"category":"heading_dependent"},
+    {"queryId":"en-ret-04","documentId":"doc-en-retrieval","language":"en","query":"How should the system respond when retrieved evidence is weak?","relevantBlockIds":["en-ret-4","en-ret-5"],"category":"cross_paragraph"},
+    {"queryId":"en-ret-05","documentId":"doc-en-retrieval","language":"en","query":"What is the difference between recall and precision stages?","relevantBlockIds":["en-ret-1"],"category":"terminology_mismatch"},
+    {"queryId":"en-ret-06","documentId":"doc-en-retrieval","language":"en","query":"Which metadata must survive context construction?","relevantBlockIds":["en-ret-4"],"category":"morphology_heavy"},
+    {"queryId":"en-ret-07","documentId":"doc-en-retrieval","language":"en","query":"What makes raw score scales incompatible?","relevantBlockIds":["en-ret-2"],"category":"factual"},
+
+    {"queryId":"en-code-01","documentId":"doc-en-python","language":"en","query":"When is a deterministic pipeline preferred?","relevantBlockIds":["en-code-1"],"category":"factual"},
+    {"queryId":"en-code-02","documentId":"doc-en-python","language":"en","query":"What does the normalization function change?","relevantBlockIds":["en-code-2"],"category":"paraphrase"},
+    {"queryId":"en-code-03","documentId":"doc-en-python","language":"en","query":"What does the Tests section require?","relevantBlockIds":["en-code-3","en-code-4"],"category":"heading_dependent"},
+    {"queryId":"en-code-04","documentId":"doc-en-python","language":"en","query":"Which test properties and execution restriction apply to uploaded code?","relevantBlockIds":["en-code-4","en-code-5"],"category":"cross_paragraph"},
+    {"queryId":"en-code-05","documentId":"doc-en-python","language":"en","query":"What is source-order stability in testing?","relevantBlockIds":["en-code-4"],"category":"terminology_mismatch"},
+    {"queryId":"en-code-06","documentId":"doc-en-python","language":"en","query":"Why must document code remain unexecuted?","relevantBlockIds":["en-code-5"],"category":"morphology_heavy"},
+    {"queryId":"en-code-07","documentId":"doc-en-python","language":"en","query":"Which line ending does normalize produce?","relevantBlockIds":["en-code-2"],"category":"factual"},
+
+    {"queryId":"en-plan-01","documentId":"doc-en-planning","language":"en","query":"What should be inspected before a change?","relevantBlockIds":["en-plan-1"],"category":"factual"},
+    {"queryId":"en-plan-02","documentId":"doc-en-planning","language":"en","query":"Which layer owns use-case coordination?","relevantBlockIds":["en-plan-2"],"category":"paraphrase"},
+    {"queryId":"en-plan-03","documentId":"doc-en-planning","language":"en","query":"What happens under the Verification heading?","relevantBlockIds":["en-plan-3","en-plan-4"],"category":"heading_dependent"},
+    {"queryId":"en-plan-04","documentId":"doc-en-planning","language":"en","query":"How do focused tests and documentation claims work together?","relevantBlockIds":["en-plan-4","en-plan-5"],"category":"cross_paragraph"},
+    {"queryId":"en-plan-05","documentId":"doc-en-planning","language":"en","query":"What separates a route handler from a repository?","relevantBlockIds":["en-plan-2"],"category":"terminology_mismatch"},
+    {"queryId":"en-plan-06","documentId":"doc-en-planning","language":"en","query":"Why should unimplemented features not be claimed as working?","relevantBlockIds":["en-plan-5"],"category":"morphology_heavy"},
+    {"queryId":"en-plan-07","documentId":"doc-en-planning","language":"en","query":"Which checks follow focused unit tests?","relevantBlockIds":["en-plan-4"],"category":"factual"}
+  ]
+}
