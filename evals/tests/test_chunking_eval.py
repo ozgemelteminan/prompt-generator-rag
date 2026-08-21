@@ -1,3 +1,7 @@
+import ast
+import json
+import sys
+import types
 from pathlib import Path
 
 import pytest
@@ -5,6 +9,7 @@ from app.document_processing.models import ChunkingConfig
 
 from evals.src.chunking_eval import (
     DebugHashEmbedder,
+    SentenceTransformerEmbedder,
     fixed_size_chunks,
     production_structure_aware_chunks,
     recursive_chunks,
@@ -119,3 +124,62 @@ def test_debug_embedder_cannot_write_official_results(tmp_path) -> None:
             output_dir=tmp_path,
             chunker_configurations={},
         )
+
+
+def test_sentence_transformer_remote_code_defaults_to_false(monkeypatch) -> None:
+    calls: list[tuple[str, bool]] = []
+
+    class FakeSentenceTransformer:
+        def __init__(self, model_name: str, *, trust_remote_code: bool) -> None:
+            calls.append((model_name, trust_remote_code))
+
+    monkeypatch.setitem(
+        sys.modules,
+        "sentence_transformers",
+        types.SimpleNamespace(SentenceTransformer=FakeSentenceTransformer),
+    )
+
+    embedder = SentenceTransformerEmbedder("example/model")
+
+    assert embedder.trust_remote_code is False
+    assert calls == [("example/model", False)]
+
+
+def test_sentence_transformer_forwards_explicit_remote_code_opt_in(monkeypatch) -> None:
+    calls: list[tuple[str, bool]] = []
+
+    class FakeSentenceTransformer:
+        def __init__(self, model_name: str, *, trust_remote_code: bool) -> None:
+            calls.append((model_name, trust_remote_code))
+
+    monkeypatch.setitem(
+        sys.modules,
+        "sentence_transformers",
+        types.SimpleNamespace(SentenceTransformer=FakeSentenceTransformer),
+    )
+
+    embedder = SentenceTransformerEmbedder(
+        "Alibaba-NLP/gte-multilingual-base", trust_remote_code=True
+    )
+
+    assert embedder.trust_remote_code is True
+    assert calls == [("Alibaba-NLP/gte-multilingual-base", True)]
+
+
+def test_notebook_cells_are_valid_python_and_configure_production_import_path() -> None:
+    notebook = json.loads(
+        (ROOT / "notebooks/01_chunking_experiments.ipynb").read_text()
+    )
+    code = [
+        "".join(cell["source"])
+        for cell in notebook["cells"]
+        if cell["cell_type"] == "code"
+    ]
+
+    for cell in code:
+        ast.parse(cell)
+    setup = code[0]
+    initialization = code[1]
+    assert "api_root = repository_root / 'apps' / 'api'" in setup
+    assert "sys.path.insert(0, str(import_root))" in setup
+    assert "trust_remote_code=True" in initialization

@@ -56,11 +56,18 @@ class SentenceTransformerEmbedder:
 
     is_official = True
 
-    def __init__(self, model_name: str = "Alibaba-NLP/gte-multilingual-base") -> None:
+    def __init__(
+        self,
+        model_name: str = "Alibaba-NLP/gte-multilingual-base",
+        trust_remote_code: bool = False,
+    ) -> None:
         from sentence_transformers import SentenceTransformer
 
         self.model_name = model_name
-        self._model = SentenceTransformer(model_name)
+        self.trust_remote_code = trust_remote_code
+        self._model = SentenceTransformer(
+            model_name, trust_remote_code=trust_remote_code
+        )
 
     def encode(self, texts: list[str]) -> list[list[float]]:
         return self._model.encode(texts, normalize_embeddings=True).tolist()

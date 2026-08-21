@@ -330,7 +330,7 @@ chunking strategy. The shared evaluation modules calculate Recall@5, Recall@10,
 HitRate@5, MRR, nDCG@10, chunk-size statistics, overlap ratio, and model-tokenizer
 truncation rate. Results are grouped by language and query category.
 
-Run the official experiment in [the Colab notebook](/Users/ozge/Documents/ChatGPT/prompt-generator-rag/notebooks/01_chunking_experiments.ipynb): update the clone URL in its first cell, then run all cells. It installs the repository packages and `sentence-transformers`, executes the three strategies, displays comparison/breakdown tables, and writes official JSON/CSV artifacts to `evals/results/chunking/`.
+Run the official experiment in [the Colab notebook](/Users/ozge/Documents/ChatGPT/prompt-generator-rag/notebooks/01_chunking_experiments.ipynb): update the clone URL in its first cell, then run all cells. It installs the repository packages, explicitly adds both the repository root and `apps/api` to Python imports, and initializes `Alibaba-NLP/gte-multilingual-base` through the evaluation adapter with its required explicit `trust_remote_code=True` opt-in. It then executes the three strategies, displays comparison/breakdown tables, and writes official JSON/CSV artifacts to `evals/results/chunking/`.
 
 For local evaluation tests only (the debug hash embedder is intentionally not official):
 
