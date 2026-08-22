@@ -1,11 +1,10 @@
 services:
   postgres:
     image: pgvector/pgvector:pg16
-    container_name: promptforge-postgres
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-promptforge}
-      POSTGRES_USER: ${POSTGRES_USER:-promptforge}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-development-only}
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
@@ -16,5 +15,76 @@ services:
       timeout: 5s
       retries: 10
 
+  migrate:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      APP_ENVIRONMENT: ${APP_ENVIRONMENT:-production}
+      DEBUG: ${DEBUG:-false}
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL}
+      CORS_ORIGINS: ${CORS_ORIGINS:?set CORS_ORIGINS}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:?set OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4.1-mini}
+      OPENAI_EXECUTION_MODEL: ${OPENAI_EXECUTION_MODEL:-}
+      OPENAI_TIMEOUT_SECONDS: ${OPENAI_TIMEOUT_SECONDS:-30}
+      EXECUTION_MAX_INPUT_CHARACTERS: ${EXECUTION_MAX_INPUT_CHARACTERS:-20000}
+      LOCAL_WORKSPACE_ID: ${LOCAL_WORKSPACE_ID:-local-workspace}
+      RATE_LIMIT_GENERATE_REQUESTS: ${RATE_LIMIT_GENERATE_REQUESTS:-10}
+      RATE_LIMIT_EXECUTE_REQUESTS: ${RATE_LIMIT_EXECUTE_REQUESTS:-20}
+      RATE_LIMIT_WINDOW_SECONDS: ${RATE_LIMIT_WINDOW_SECONDS:-60}
+      GENERATION_QUOTA_PER_MONTH: ${GENERATION_QUOTA_PER_MONTH:-100}
+      EXECUTION_QUOTA_PER_MONTH: ${EXECUTION_QUOTA_PER_MONTH:-200}
+      DOCUMENT_MAX_UPLOAD_BYTES: ${DOCUMENT_MAX_UPLOAD_BYTES:-10485760}
+      DOCUMENT_STORAGE_PATH: /app/data/uploads
+      CHUNK_TARGET_TOKENS: ${CHUNK_TARGET_TOKENS:-350}
+      CHUNK_MAX_TOKENS: ${CHUNK_MAX_TOKENS:-500}
+      CHUNK_OVERLAP_TOKENS: ${CHUNK_OVERLAP_TOKENS:-40}
+      EMBEDDING_MODEL_ID: ${EMBEDDING_MODEL_ID:-intfloat/multilingual-e5-large-instruct}
+      EMBEDDING_BATCH_SIZE: ${EMBEDDING_BATCH_SIZE:-32}
+      EMBEDDING_DEVICE: ${EMBEDDING_DEVICE:-}
+      EMBEDDING_MAX_INPUT_TOKENS: ${EMBEDDING_MAX_INPUT_TOKENS:-}
+      RETRIEVAL_DEFAULT_LIMIT: ${RETRIEVAL_DEFAULT_LIMIT:-5}
+      RETRIEVAL_MAX_LIMIT: ${RETRIEVAL_MAX_LIMIT:-20}
+      HNSW_EF_SEARCH: ${HNSW_EF_SEARCH:-100}
+      RAG_CONTEXT_MAX_TOKENS: ${RAG_CONTEXT_MAX_TOKENS:-2000}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - document_data:/app/data/uploads
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:?set NEXT_PUBLIC_API_BASE_URL}
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+
 volumes:
   postgres_data:
+  document_data:

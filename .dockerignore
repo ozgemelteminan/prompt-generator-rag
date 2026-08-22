@@ -1,0 +1,14 @@
+.git/
+.env
+.env.*
+!.env.example
+node_modules/
+apps/web/node_modules/
+apps/web/.next/
+apps/web/*.tsbuildinfo
+**/__pycache__/
+**/.pytest_cache/
+**/.ruff_cache/
+**/*.py[cod]
+data/uploads/
+evals/results/

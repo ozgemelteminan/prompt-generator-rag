@@ -14,7 +14,7 @@ from app.core.errors import (
 
 def create_app() -> FastAPI:
     settings = get_settings()
-    app = FastAPI(title="PromptForge API", version="0.1.0")
+    app = FastAPI(title="PromptForge API", version="0.1.0", debug=settings.debug)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,

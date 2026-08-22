@@ -8,6 +8,8 @@ node_modules/
 .pnpm-store/
 .next/
 out/
+dist/
+build/
 
 # Python
 __pycache__/
@@ -24,3 +26,4 @@ venv/
 coverage.xml
 htmlcov/
 *.tsbuildinfo
+data/uploads/

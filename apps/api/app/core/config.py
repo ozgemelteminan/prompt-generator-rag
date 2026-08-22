@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -16,6 +17,8 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    app_environment: Literal["development", "production"] = "development"
+    debug: bool = False
     database_url: str = (
         "postgresql+psycopg://promptforge:local-development-only@localhost:5432/promptforge"
     )
@@ -70,6 +73,10 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_chunk_budgets(self) -> "Settings":
+        if self.app_environment == "production" and self.debug:
+            raise ValueError("DEBUG must be false in production.")
+        if "*" in self.cors_origins:
+            raise ValueError("CORS_ORIGINS must list explicit origins.")
         if self.chunk_max_tokens < self.chunk_target_tokens:
             raise ValueError("CHUNK_MAX_TOKENS must be at least CHUNK_TARGET_TOKENS.")
         if self.chunk_overlap_tokens >= self.chunk_max_tokens:
