@@ -59,6 +59,7 @@ class SentenceTransformerEmbedder:
     def __init__(
         self,
         model_name: str = "Alibaba-NLP/gte-multilingual-base",
+        *,
         trust_remote_code: bool = False,
     ) -> None:
         from sentence_transformers import SentenceTransformer

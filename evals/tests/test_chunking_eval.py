@@ -1,4 +1,5 @@
 import ast
+import inspect
 import json
 import sys
 import types
@@ -143,6 +144,12 @@ def test_sentence_transformer_remote_code_defaults_to_false(monkeypatch) -> None
 
     assert embedder.trust_remote_code is False
     assert calls == [("example/model", False)]
+    assert (
+        inspect.signature(SentenceTransformerEmbedder.__init__)
+        .parameters["trust_remote_code"]
+        .default
+        is False
+    )
 
 
 def test_sentence_transformer_forwards_explicit_remote_code_opt_in(monkeypatch) -> None:
@@ -166,6 +173,24 @@ def test_sentence_transformer_forwards_explicit_remote_code_opt_in(monkeypatch) 
     assert calls == [("Alibaba-NLP/gte-multilingual-base", True)]
 
 
+def test_sentence_transformer_forwards_explicit_false(monkeypatch) -> None:
+    calls: list[tuple[str, bool]] = []
+
+    class FakeSentenceTransformer:
+        def __init__(self, model_name: str, *, trust_remote_code: bool) -> None:
+            calls.append((model_name, trust_remote_code))
+
+    monkeypatch.setitem(
+        sys.modules,
+        "sentence_transformers",
+        types.SimpleNamespace(SentenceTransformer=FakeSentenceTransformer),
+    )
+
+    SentenceTransformerEmbedder("example/model", trust_remote_code=False)
+
+    assert calls == [("example/model", False)]
+
+
 def test_notebook_cells_are_valid_python_and_configure_production_import_path() -> None:
     notebook = json.loads(
         (ROOT / "notebooks/01_chunking_experiments.ipynb").read_text()
@@ -182,4 +207,7 @@ def test_notebook_cells_are_valid_python_and_configure_production_import_path() 
     initialization = code[1]
     assert "api_root = repository_root / 'apps' / 'api'" in setup
     assert "sys.path.insert(0, str(import_root))" in setup
+    assert "fetch', '--all', '--tags', '--prune" in setup
+    assert "Stale evaluation modules are already loaded" in setup
+    assert "inspect.signature(SentenceTransformerEmbedder.__init__)" in initialization
     assert "trust_remote_code=True" in initialization
