@@ -10,6 +10,10 @@ The project is intentionally explicit about its decisions and evaluation
 evidence: the Prompt Engine is provider-independent where possible, and RAG
 experiments are kept separate from production implementation.
 
+For a short product walkthrough, see [the demo guide](docs/DEMO.md). The
+[architecture diagram](docs/ARCHITECTURE.md) and
+[screenshot capture plan](docs/screenshots/README.md) support portfolio review.
+
 ## Project overview
 
 Writing a useful prompt usually requires translating an informal request into a
