@@ -84,6 +84,7 @@ export async function generatePrompt(input: {
   input: string;
   language: AppLanguage;
   presetId?: string;
+  documentIds?: string[];
 }): Promise<GeneratePromptResponse> {
   const response = await fetch(`${apiBaseUrl}/api/v1/prompts/generate`, {
     method: "POST",
@@ -203,8 +204,6 @@ export function chunkDocument(id: string): Promise<DocumentChunkingResponse> {
 
 export type RagSource = {
   citationId: number;
-  documentId: string;
-  chunkId: string;
   filename: string;
   pageStart: number | null;
   pageEnd: number | null;

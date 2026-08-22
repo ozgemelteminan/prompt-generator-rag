@@ -18,9 +18,8 @@ from app.infrastructure.huggingface_embeddings import (
     SELECTED_EMBEDDING_DIMENSION,
     MultilingualE5EmbeddingProvider,
 )
+from app.infrastructure.llm import ProviderConfigurationError, create_llm_provider
 from app.infrastructure.local_document_storage import LocalDocumentStorage
-from app.infrastructure.openai_analysis import OpenAIResponsesStructuredAnalysisBackend
-from app.infrastructure.openai_execution import OpenAIResponsesExecutionBackend
 from app.repositories.documents import DocumentRepository
 from app.repositories.prompt_history import PromptHistoryRepository
 from app.repositories.retrieval import DenseRetrievalRepository
@@ -143,15 +142,7 @@ def get_grounded_rag_service(
     retrieval_service: Annotated[DenseRetrievalService, Depends(get_dense_retrieval_service)],
     context_builder: Annotated[ContextBuilder, Depends(get_context_builder)],
 ) -> GroundedRagService:
-    backend = (
-        _UnconfiguredExecutionBackend()
-        if settings.openai_api_key is None
-        else OpenAIResponsesExecutionBackend(
-            api_key=settings.openai_api_key.get_secret_value(),
-            model=settings.resolved_openai_execution_model,
-            timeout_seconds=settings.openai_timeout_seconds,
-        )
-    )
+    backend = _execution_backend_from_settings(settings)
     return GroundedRagService(
         retrieval_service=retrieval_service,
         context_builder=context_builder,
@@ -198,22 +189,19 @@ def get_prompt_generation_service(
     settings: SettingsDependency,
     repository: Annotated[PromptHistoryRepository, Depends(get_prompt_history_repository)],
     usage_guard: Annotated[UsageGuard, Depends(get_usage_guard)],
+    retrieval_service: Annotated[DenseRetrievalService, Depends(get_dense_retrieval_service)],
+    context_builder: Annotated[ContextBuilder, Depends(get_context_builder)],
 ) -> PromptGenerationService:
     """Build the production workflow from configuration at the API boundary."""
-    if settings.openai_api_key is None:
-        backend = _UnconfiguredStructuredAnalysisBackend()
-    else:
-        backend = OpenAIResponsesStructuredAnalysisBackend(
-            api_key=settings.openai_api_key.get_secret_value(),
-            model=settings.openai_model,
-            timeout_seconds=settings.openai_timeout_seconds,
-        )
+    backend = _analysis_backend_from_settings(settings)
     return PromptGenerationService(
         intent_analyzer=IntentAnalyzer(backend),
         gap_analyzer=GapAnalyzer(),
         compiler=GenericPromptCompiler(),
         recorder=repository,
         usage_guard=usage_guard,
+        retrieval_service=retrieval_service,
+        context_builder=context_builder,
     )
 
 
@@ -223,17 +211,24 @@ def get_prompt_execution_service(
     usage_guard: Annotated[UsageGuard, Depends(get_usage_guard)],
 ) -> PromptExecutionService:
     """Build the direct-execution workflow from configuration at the API boundary."""
-    if settings.openai_api_key is None:
-        backend = _UnconfiguredExecutionBackend()
-    else:
-        backend = OpenAIResponsesExecutionBackend(
-            api_key=settings.openai_api_key.get_secret_value(),
-            model=settings.resolved_openai_execution_model,
-            timeout_seconds=settings.openai_timeout_seconds,
-        )
+    backend = _execution_backend_from_settings(settings)
     return PromptExecutionService(
         backend=backend,
         max_input_characters=settings.execution_max_input_characters,
         history_repository=repository,
         usage_guard=usage_guard,
     )
+
+
+def _analysis_backend_from_settings(settings: Settings) -> object:
+    try:
+        return create_llm_provider(settings)
+    except ProviderConfigurationError:
+        return _UnconfiguredStructuredAnalysisBackend()
+
+
+def _execution_backend_from_settings(settings: Settings) -> object:
+    try:
+        return create_llm_provider(settings)
+    except ProviderConfigurationError:
+        return _UnconfiguredExecutionBackend()

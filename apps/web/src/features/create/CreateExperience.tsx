@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 import {
   type AppLanguage,
@@ -8,9 +8,11 @@ import {
   executePrompt,
   generatePrompt,
   type GeneratePromptResponse,
+  listDocuments,
   PromptApiError,
   setPromptFavorite,
   submitPromptFeedback,
+  type DocumentMetadata,
 } from "@/lib/api";
 import { localizedError } from "@/lib/errors";
 
@@ -26,6 +28,10 @@ const content = {
     english: "English",
     presets: "Hızlı başlangıç",
     optional: "İsteğe bağlı",
+    documents: "Belgeleri kullan",
+    documentsDescription: "Hazır belgelerden ilgili bağlamı promptunuza ekleyin.",
+    noDocuments: "Henüz kullanıma hazır belge yok.",
+    selectedDocuments: "Seçilen belgeler",
     requestLabel: "Ne yapmak istiyorsunuz?",
     requestPlaceholder: "Örneğin: Yeni müşterilere göndermek için kısa bir proje güncellemesi e-postası yazmama yardım et.",
     generate: "Prompt oluştur",
@@ -58,6 +64,10 @@ const content = {
     english: "English",
     presets: "Quick start",
     optional: "Optional",
+    documents: "Use documents",
+    documentsDescription: "Add relevant context from ready documents to your prompt.",
+    noDocuments: "No ready documents are available yet.",
+    selectedDocuments: "Selected documents",
     requestLabel: "What would you like to do?",
     requestPlaceholder: "For example: Help me write a short project update email for new customers.",
     generate: "Create prompt",
@@ -87,6 +97,8 @@ export function CreateExperience() {
   const [language, setLanguage] = useState<AppLanguage>("en");
   const [request, setRequest] = useState("");
   const [presetId, setPresetId] = useState<string | undefined>();
+  const [documents, setDocuments] = useState<DocumentMetadata[]>([]);
+  const [selectedDocumentIds, setSelectedDocumentIds] = useState<string[]>([]);
   const [result, setResult] = useState<GeneratePromptResponse | null>(null);
   const [answers, setAnswers] = useState<string[]>([]);
   const [clarificationAttempted, setClarificationAttempted] = useState(false);
@@ -103,6 +115,14 @@ export function CreateExperience() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [feedbackSaved, setFeedbackSaved] = useState(false);
   const text = content[language];
+  const readyDocuments = documents.filter(
+    (document) => document.status === "embedded" || document.status === "ready",
+  );
+  const selectedDocuments = readyDocuments.filter((document) => selectedDocumentIds.includes(document.id));
+
+  useEffect(() => {
+    void listDocuments().then((response) => setDocuments(response.items)).catch(() => undefined);
+  }, []);
 
   async function requestGeneration(input: string) {
     setIsLoading(true);
@@ -117,7 +137,12 @@ export function CreateExperience() {
     setIsFavorite(false);
     setFeedbackSaved(false);
     try {
-      const nextResult = await generatePrompt({ input, language, presetId });
+      const nextResult = await generatePrompt({
+        input,
+        language,
+        presetId,
+        documentIds: selectedDocumentIds.length ? selectedDocumentIds : undefined,
+      });
       setResult(nextResult);
       setAnswers(nextResult.clarificationPlan.questions.map(() => ""));
     } catch (error) {
@@ -138,6 +163,12 @@ export function CreateExperience() {
     }
     setClarificationAttempted(false);
     void requestGeneration(request);
+  }
+
+  function toggleDocument(id: string) {
+    setSelectedDocumentIds((current) =>
+      current.includes(id) ? current.filter((documentId) => documentId !== id) : [...current, id],
+    );
   }
 
   function handleClarification(event: FormEvent<HTMLFormElement>) {
@@ -230,6 +261,22 @@ export function CreateExperience() {
               </button>
             ))}
           </div>
+        </fieldset>
+
+        <fieldset className="space-y-3">
+          <legend className="text-sm font-semibold">{text.documents} <span className="font-normal pf-muted">{text.optional}</span></legend>
+          <p className="text-sm pf-muted">{text.documentsDescription}</p>
+          {readyDocuments.length === 0 ? <p className="text-sm pf-muted">{text.noDocuments}</p> : (
+            <div className="flex flex-wrap gap-2">
+              {readyDocuments.map((document) => (
+                <label className={`cursor-pointer rounded-lg border px-3 py-2 text-sm transition focus-within:ring-2 focus-within:ring-[#6F7454] ${selectedDocumentIds.includes(document.id) ? "border-[#6F7454] bg-[#ECE6D8]" : "border-[#D8D1C1] bg-[#FBF9F3] hover:bg-[#F4F0E6]"}`} key={document.id}>
+                  <input checked={selectedDocumentIds.includes(document.id)} className="mr-2 accent-[#6F7454]" disabled={isLoading} onChange={() => toggleDocument(document.id)} type="checkbox" />
+                  {document.filename}
+                </label>
+              ))}
+            </div>
+          )}
+          {selectedDocuments.length > 0 && <div className="flex flex-wrap items-center gap-2 text-sm"><span className="font-medium">{text.selectedDocuments}:</span>{selectedDocuments.map((document) => <span className="pf-badge bg-[#ECE6D8] text-[#454A35]" key={document.id}>{document.filename}</span>)}</div>}
         </fieldset>
 
         <fieldset className="space-y-3">

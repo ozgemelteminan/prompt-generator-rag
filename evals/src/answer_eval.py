@@ -3,7 +3,6 @@
 import argparse
 import csv
 import json
-import os
 import re
 from collections.abc import Callable, Iterable
 from dataclasses import asdict, dataclass
@@ -380,16 +379,13 @@ def run_provider_fixture_evaluation(
     dataset: AnswerEvalDataset,
 ) -> tuple[AnswerEvalOutcome, ...]:
     """Opt-in answer-generation run over the same reviewed fixture contexts."""
-    from app.infrastructure.openai_execution import OpenAIResponsesExecutionBackend
+    from app.core.config import Settings
+    from app.infrastructure.llm import ProviderConfigurationError, create_llm_provider
 
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("OPENAI_API_KEY is required for --mode provider.")
-    backend = OpenAIResponsesExecutionBackend(
-        api_key=api_key,
-        model=os.environ.get("OPENAI_MODEL", "gpt-4.1-mini"),
-        timeout_seconds=float(os.environ.get("OPENAI_TIMEOUT_SECONDS", "30")),
-    )
+    try:
+        backend = create_llm_provider(Settings())
+    except ProviderConfigurationError as error:
+        raise ValueError(str(error)) from error
     return run_fixture_evaluation(dataset, generation_backend_factory=lambda _: backend)
 
 
@@ -572,7 +568,7 @@ def write_answer_eval_artifacts(
         + "\n".join(f"- {item}" for item in payload["limitations"])
         + "\n\n## Optional provider run\n\n"
         + "This uses the same reviewed fixture contexts and makes one configured-provider call for each answerable case; it does not replace the M6.1 PostgreSQL smoke test.\n\n"
-        + "```bash\nOPENAI_API_KEY=<key> PYTHONPATH=apps/api:packages/prompt-engine python -m evals.src.answer_eval --mode provider\n```\n"
+        + "```bash\nLLM_PROVIDER=groq GROQ_API_KEY=<key> PYTHONPATH=apps/api:packages/prompt-engine python -m evals.src.answer_eval --mode provider\n```\n"
         + "\n",
         encoding="utf-8",
     )

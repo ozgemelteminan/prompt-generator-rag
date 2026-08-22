@@ -2,13 +2,16 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+from pgvector.sqlalchemy import Vector as PostgreSQLVector
 from sqlalchemy import create_engine, select
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
 from app.api.v1.dependencies import get_document_service
 from app.core.caller import CallerContext
 from app.db.models import Base, DocumentChunkRecord, DocumentEmbeddingRecord, DocumentRecord
+from app.db.vector import PgVector
 from app.document_processing.chunking import StructureAwareChunker
 from app.document_processing.models import ChunkingConfig
 from app.infrastructure.huggingface_embeddings import (
@@ -159,6 +162,15 @@ def test_embedding_rejects_invalid_dimension_before_persistence(
     assert response.json()["error"]["code"] == "embedding_dimension_mismatch"
     assert session.get(DocumentRecord, document_id).ingestion_status == "failed"
     assert list(session.scalars(select(DocumentEmbeddingRecord))) == []
+
+
+def test_pgvector_postgres_dialect_adapts_with_dimension() -> None:
+    vector = PgVector(SELECTED_EMBEDDING_DIMENSION)
+
+    adapted = vector.dialect_impl(postgresql.dialect())
+
+    assert isinstance(adapted.impl, PostgreSQLVector)
+    assert adapted.compile(dialect=postgresql.dialect()) == "VECTOR(1024)"
 
 
 def test_e5_provider_embeds_raw_passages_with_normalization() -> None:

@@ -8,7 +8,7 @@ This guide is provider-neutral and does not perform an external deployment.
 
 - Docker Engine with Compose v2
 - A persistent volume provider for PostgreSQL and uploaded-document files
-- An OpenAI API key supplied through your deployment secret manager
+- A Groq or Gemini API key supplied through your deployment secret manager
 - Public HTTPS origins for the web application and API
 
 Copy `.env.example` to `.env`, replace all `replace-with-...` values, and do
@@ -17,11 +17,15 @@ database hostname is the Compose `postgres` service, and its public URLs are
 examples that must be replaced.
 
 Required settings are `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`,
-`DATABASE_URL`, `CORS_ORIGINS`, `OPENAI_API_KEY`, and
-`NEXT_PUBLIC_API_BASE_URL`. Keep `APP_ENVIRONMENT=production` and
+`DATABASE_URL`, `CORS_ORIGINS`, `LLM_PROVIDER`, the selected provider's key and
+model, and `NEXT_PUBLIC_API_BASE_URL`. Keep `APP_ENVIRONMENT=production` and
 `DEBUG=false`. `CORS_ORIGINS` is a comma-separated explicit allow-list; `*` is
 rejected. `NEXT_PUBLIC_API_BASE_URL` is compiled into the web build, so rebuild
 the web image whenever it changes.
+
+`LLM_PROVIDER=groq` is the default and requires `GROQ_API_KEY`; its default
+model is `openai/gpt-oss-120b`. `LLM_PROVIDER=gemini` requires
+`GEMINI_API_KEY` and `GEMINI_MODEL`. Configure only the selected provider key.
 
 ## Container startup
 
@@ -75,7 +79,7 @@ implemented yet.
 
 ## Security and operational notes
 
-- Secrets come from environment variables or the deployment secret manager; no secrets belong in images or Git.
+- Selected-provider secrets come from environment variables or the deployment secret manager; no secrets belong in images or Git.
 - Production rejects `DEBUG=true` and wildcard CORS origins. API exception handlers return stable sanitized errors.
 - Upload type and size validation, workspace isolation, bounded retrieval/context limits, and private vectors/storage keys are unchanged.
 - Current request rate limiting is process-local. Deploy one API replica unless an external shared limiter is introduced in a later milestone.

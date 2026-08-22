@@ -173,7 +173,7 @@ they are not a claim that any external model is immune to every adversarial inpu
 | Prompt domain | Python package with provider-independent contracts |
 | Database | PostgreSQL 16 + pgvector, cosine/HNSW vector search |
 | Embeddings | `intfloat/multilingual-e5-large-instruct` via SentenceTransformers |
-| Provider adapter | OpenAI Responses API behind application interfaces |
+| Runtime LLM providers | Groq by default; Gemini alternative, behind provider-neutral contracts |
 | Local deployment | Docker Compose |
 
 ## Repository structure
@@ -209,6 +209,11 @@ repositories own persistence and workspace-scoped retrieval.
 
 Prerequisites: Python 3.12+, [uv](https://docs.astral.sh/uv/), Node.js 20+ with
 pnpm, and Docker Compose.
+
+For local/demo LLM calls, set `LLM_PROVIDER=groq` with `GROQ_API_KEY` (the
+default uses `openai/gpt-oss-120b`), or set `LLM_PROVIDER=gemini` with both
+`GEMINI_API_KEY` and `GEMINI_MODEL`. Only the selected provider key is needed;
+OpenAI credentials are not used.
 
 ```bash
 cp .env.example .env

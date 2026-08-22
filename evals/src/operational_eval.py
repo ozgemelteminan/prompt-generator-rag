@@ -185,7 +185,7 @@ def run_deterministic_local() -> dict[str, Any]:
             <= success["context_budget"],
             "retrieval_limit_bounded": settings.retrieval_default_limit
             <= settings.retrieval_max_limit,
-            "timeout_configured": settings.openai_timeout_seconds > 0,
+            "timeout_configured": settings.llm_timeout_seconds > 0,
             "public_sources_exclude_vectors_and_storage": success["public_source_safe"],
             "provider_failure_sanitized": _provider_failure_is_sanitized(),
         },
@@ -388,7 +388,7 @@ def run_real_production(*, query: str, document_ids: tuple[str, ...]) -> dict[st
     from app.core.config import Settings
     from app.db.session import SessionLocal
     from app.infrastructure.huggingface_embeddings import SELECTED_EMBEDDING_DIMENSION
-    from app.infrastructure.openai_execution import OpenAIResponsesExecutionBackend
+    from app.infrastructure.llm import ProviderConfigurationError, create_llm_provider
     from app.repositories.documents import DocumentRepository
     from app.repositories.retrieval import DenseRetrievalRepository
     from app.services.context import ContextBuilder
@@ -396,8 +396,10 @@ def run_real_production(*, query: str, document_ids: tuple[str, ...]) -> dict[st
     from app.services.retrieval import DenseRetrievalService
 
     settings = Settings()
-    if settings.openai_api_key is None:
-        raise ValueError("OPENAI_API_KEY is required for --mode real.")
+    try:
+        backend = create_llm_provider(settings)
+    except ProviderConfigurationError as error:
+        raise ValueError(str(error)) from error
     session = SessionLocal()
     try:
         timings = TimingCollector()
@@ -409,11 +411,7 @@ def run_real_production(*, query: str, document_ids: tuple[str, ...]) -> dict[st
             ContextBuilder(max_tokens=settings.rag_context_max_tokens), timings
         )
         generation = _TimedGenerationBackend(
-            OpenAIResponsesExecutionBackend(
-                api_key=settings.openai_api_key.get_secret_value(),
-                model=settings.resolved_openai_execution_model,
-                timeout_seconds=settings.openai_timeout_seconds,
-            ),
+            backend,
             timings,
         )
         service = GroundedRagService(
@@ -470,13 +468,13 @@ def write_operational_artifacts(
             "requirements": [
                 "DATABASE_URL to migrated PostgreSQL + pgvector",
                 "embedded scoped document",
-                "OPENAI_API_KEY",
+                "selected LLM_PROVIDER configuration",
                 "local E5 model runtime",
             ],
         },
         "limitations": [
             "Local timings are deterministic-fixture measurements, not production latency targets.",
-            "Current OpenAI execution results do not expose usage metadata through the provider-neutral adapter, so token totals and cost remain unavailable.",
+            "Current provider adapters do not expose usage metadata through the provider-neutral contract, so token totals and cost remain unavailable.",
             "No provider prices are hardcoded; an estimate requires an explicit external price assumption.",
         ],
     }

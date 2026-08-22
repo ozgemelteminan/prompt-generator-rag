@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from math import sqrt
 
-from sqlalchemy import select, text
+from sqlalchemy import Float, select, text
 from sqlalchemy.orm import Session
 
 from app.db.models import DocumentChunkRecord, DocumentEmbeddingRecord, DocumentRecord
@@ -75,7 +75,9 @@ class DenseRetrievalRepository:
         self._session.execute(
             text("SELECT set_config('hnsw.iterative_scan', 'strict_order', true)")
         )
-        distance = DocumentEmbeddingRecord.embedding.op("<=>")(query_vector).label("distance")
+        distance = DocumentEmbeddingRecord.embedding.op("<=>", return_type=Float)(
+            query_vector
+        ).label("distance")
         rows = self._session.execute(
             select(DocumentEmbeddingRecord, DocumentChunkRecord, DocumentRecord, distance)
             .join(DocumentChunkRecord, DocumentEmbeddingRecord.chunk_id == DocumentChunkRecord.id)

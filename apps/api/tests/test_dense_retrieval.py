@@ -2,7 +2,8 @@ from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import Float, create_engine
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
@@ -218,3 +219,26 @@ def test_e5_query_format_and_safe_provider_failure(client: TestClient) -> None:
     response = client.post("/api/v1/retrieval/search", json={"query": "safe"})
     assert response.status_code == 500
     assert response.json()["error"]["code"] == "retrieval_failed"
+
+
+def test_postgres_cosine_distance_expression_is_scalar_float() -> None:
+    class CapturingSession:
+        def __init__(self) -> None:
+            self.statements: list[object] = []
+
+        def execute(self, statement: object, *_: object) -> list[object]:
+            self.statements.append(statement)
+            return []
+
+    session = CapturingSession()
+    DenseRetrievalRepository(session)._search_postgres(  # type: ignore[arg-type]
+        filters=[],
+        query_vector=[1.0] * SELECTED_EMBEDDING_DIMENSION,
+        limit=5,
+        hnsw_ef_search=100,
+    )
+
+    statement = session.statements[-1]
+    distance = tuple(statement.selected_columns)[-1]  # type: ignore[union-attr]
+    assert isinstance(distance.type, Float)
+    assert "<=>" in str(statement.compile(dialect=postgresql.dialect()))  # type: ignore[union-attr]

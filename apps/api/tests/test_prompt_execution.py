@@ -1,14 +1,10 @@
 from dataclasses import dataclass
-from types import SimpleNamespace
-from typing import cast
 
 import pytest
 from fastapi.testclient import TestClient
-from openai import OpenAI
 from prompt_engine.execution import ExecutionResult
 
 from app.api.v1.dependencies import get_prompt_execution_service, get_prompt_generation_service
-from app.infrastructure.openai_execution import OpenAIResponsesExecutionBackend
 from app.main import app
 from app.services.prompt_execution import PromptExecutionService
 
@@ -26,21 +22,6 @@ class FakeExecutionBackend:
         if self.error is not None:
             raise self.error
         return ExecutionResult(output=self.output)
-
-
-class FakeResponses:
-    def __init__(self, output: str) -> None:
-        self.output = output
-        self.calls: list[dict[str, object]] = []
-
-    def create(self, **kwargs: object) -> SimpleNamespace:
-        self.calls.append(kwargs)
-        return SimpleNamespace(output_text=self.output)
-
-
-class FakeOpenAIClient:
-    def __init__(self, output: str) -> None:
-        self.responses = FakeResponses(output)
 
 
 @pytest.fixture
@@ -141,23 +122,3 @@ def test_execute_rejects_empty_provider_output(client: TestClient) -> None:
 
     assert response.status_code == 502
     assert response.json()["error"]["code"] == "invalid_execution_output"
-
-
-def test_openai_execution_adapter_uses_one_plain_responses_request() -> None:
-    fake_client = FakeOpenAIClient("Generated answer")
-    backend = OpenAIResponsesExecutionBackend(
-        api_key="test-key",
-        model="test-model",
-        timeout_seconds=1,
-        client=cast(OpenAI, fake_client),
-    )
-
-    result = backend.execute("Run this prompt.")
-
-    assert result == ExecutionResult(output="Generated answer")
-    assert len(fake_client.responses.calls) == 1
-    assert fake_client.responses.calls[0] == {
-        "model": "test-model",
-        "input": "Run this prompt.",
-        "store": False,
-    }

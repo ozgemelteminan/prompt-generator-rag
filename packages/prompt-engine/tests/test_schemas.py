@@ -33,12 +33,23 @@ def test_valid_english_prompt_spec() -> None:
         task={"type": "research.compare", "objective": "Compare two database options."},
         language="en",
         output={"format": "table", "length": "short", "structure": ["recommendation"]},
-        sources={"documentIds": ["document-123"]},
+        sources={
+            "documentIds": ["document-123"],
+            "context": [
+                {
+                    "citationId": 1,
+                    "documentId": "document-123",
+                    "filename": "syllabus.pdf",
+                    "text": "The final examination is closed-book.",
+                }
+            ],
+        },
     )
 
     assert spec.output.format == "table"
     assert spec.sources is not None
     assert spec.sources.document_ids == ["document-123"]
+    assert spec.sources.context[0].text == "The final examination is closed-book."
 
 
 def test_json_round_trip_uses_camel_case_schema() -> None:

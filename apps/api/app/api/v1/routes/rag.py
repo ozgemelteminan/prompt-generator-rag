@@ -29,8 +29,6 @@ class RagSourceResponse(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     citation_id: int
-    document_id: str
-    chunk_id: str
     filename: str
     page_start: int | None
     page_end: int | None

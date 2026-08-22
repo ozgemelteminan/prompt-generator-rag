@@ -61,10 +61,20 @@ class OutputPreferences(PromptEngineModel):
     structure: list[str] = Field(default_factory=list)
 
 
+class SourceContext(PromptEngineModel):
+    """A bounded retrieved excerpt available to deterministic prompt compilation."""
+
+    citation_id: int = Field(gt=0)
+    document_id: str = Field(min_length=1)
+    filename: str = Field(min_length=1)
+    text: str = Field(min_length=1)
+
+
 class SourceReferences(PromptEngineModel):
-    """Optional selected source identifiers; this model does not retrieve content."""
+    """Optional selected identifiers and bounded retrieved source excerpts."""
 
     document_ids: list[str] = Field(default_factory=list)
+    context: list[SourceContext] = Field(default_factory=list)
 
 
 class MissingInformationImportance(StrEnum):

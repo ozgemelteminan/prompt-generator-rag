@@ -1,19 +1,18 @@
 from dataclasses import dataclass
-from types import SimpleNamespace
-from typing import cast
 
 import pytest
 from fastapi.testclient import TestClient
-from openai import OpenAI
 from prompt_engine.compiler import GenericPromptCompiler
 from prompt_engine.gaps import GapAnalyzer
-from prompt_engine.intent import IntentAnalysisInput, IntentAnalyzer, StructuredAnalysisRequest
+from prompt_engine.intent import IntentAnalyzer, StructuredAnalysisRequest
 from prompt_engine.schemas import PromptSpec
 
 from app.api.v1.dependencies import get_prompt_generation_service
-from app.infrastructure.openai_analysis import OpenAIResponsesStructuredAnalysisBackend
 from app.main import app
+from app.repositories.documents import DocumentNotFoundError
+from app.services.context import ContextBuilder
 from app.services.prompt_generation import PromptGenerationService
+from app.services.retrieval import RetrievalDocumentNotReadyError, RetrievedChunk
 
 
 @dataclass
@@ -40,28 +39,63 @@ class TrackingCompiler(GenericPromptCompiler):
         return super().compile(prompt_spec)
 
 
-class FakeResponses:
-    def __init__(self, output: object) -> None:
-        self.output = output
-        self.calls: list[dict[str, object]] = []
-
-    def parse(self, **kwargs: object) -> SimpleNamespace:
-        self.calls.append(kwargs)
-        return SimpleNamespace(output_parsed=self.output)
-
-
-class FakeOpenAIClient:
-    def __init__(self, output: object) -> None:
-        self.responses = FakeResponses(output)
-
-
 def make_service(
-    backend: FakeStructuredAnalysisBackend, compiler: TrackingCompiler
+    backend: FakeStructuredAnalysisBackend,
+    compiler: TrackingCompiler,
+    retrieval_service: object | None = None,
+    context_builder: object | None = None,
 ) -> PromptGenerationService:
     return PromptGenerationService(
         intent_analyzer=IntentAnalyzer(backend),
         gap_analyzer=GapAnalyzer(),
         compiler=compiler,
+        retrieval_service=retrieval_service,  # type: ignore[arg-type]
+        context_builder=context_builder,  # type: ignore[arg-type]
+    )
+
+
+class FakeDocumentRetrieval:
+    def __init__(
+        self, results: list[RetrievedChunk] | None = None, error: Exception | None = None
+    ) -> None:
+        self.results = results or []
+        self.error = error
+        self.calls = 0
+        self.arguments: dict[str, object] = {}
+
+    def search(self, **kwargs: object) -> list[RetrievedChunk]:
+        self.calls += 1
+        self.arguments = kwargs
+        if self.error is not None:
+            raise self.error
+        return self.results
+
+
+class CountingContextBuilder:
+    def __init__(self) -> None:
+        self.builder = ContextBuilder(max_tokens=500)
+        self.calls = 0
+
+    def build(self, results: list[RetrievedChunk]):
+        self.calls += 1
+        return self.builder.build(results)
+
+
+def _document_chunk(text: str = "The final examination is closed-book.") -> RetrievedChunk:
+    return RetrievedChunk(
+        chunk_id="chunk-1",
+        document_id="syllabus-1",
+        filename="syllabus.pdf",
+        chunk_index=0,
+        text=text,
+        distance=0.1,
+        similarity=0.9,
+        page_start=1,
+        page_end=1,
+        section="Assessment",
+        heading="Final examination",
+        source_block_start=1,
+        source_block_end=1,
     )
 
 
@@ -100,6 +134,109 @@ def test_ready_flow_uses_one_backend_call_and_compiles(
     assert response.json()["promptSpec"]["language"] == language
     assert backend.calls == 1
     assert compiler.calls == 1
+    assert backend.request is not None
+    assert backend.request.document_context is None
+    assert backend.request.document_context_requested is False
+
+
+def test_document_aware_generation_scopes_retrieval_and_compiles_bounded_context(
+    client: TestClient,
+) -> None:
+    backend = FakeStructuredAnalysisBackend(
+        result={
+            "task": {"type": "writing.email", "objective": "Ask about the exam rule."},
+            "language": "en",
+        }
+    )
+    compiler = TrackingCompiler()
+    retrieval = FakeDocumentRetrieval([_document_chunk()])
+    context = CountingContextBuilder()
+    app.dependency_overrides[get_prompt_generation_service] = lambda: make_service(
+        backend, compiler, retrieval, context
+    )
+
+    response = client.post(
+        "/api/v1/prompts/generate",
+        json={
+            "input": "Ask my teacher about the final exam rule.",
+            "language": "en",
+            "documentIds": ["syllabus-1"],
+        },
+    )
+
+    assert response.status_code == 200
+    assert retrieval.arguments["document_ids"] == ("syllabus-1",)
+    assert (retrieval.calls, context.calls, backend.calls, compiler.calls) == (1, 1, 1, 1)
+    assert backend.request is not None
+    assert "The final examination is closed-book." in (backend.request.document_context or "")
+    assert "untrusted reference data" in backend.request.instructions
+    assert response.json()["promptSpec"]["sources"]["context"][0]["documentId"] == "syllabus-1"
+    assert "SOURCE CONTEXT" in response.json()["compiledPrompt"]
+
+
+def test_document_aware_generation_does_not_assert_unsupported_document_facts(
+    client: TestClient,
+) -> None:
+    backend = FakeStructuredAnalysisBackend(
+        result={
+            "task": {"type": "writing.email", "objective": "Ask about the final exam rule."},
+            "language": "en",
+            "missingInformation": [
+                {"field": "exam_rule", "importance": "helpful", "question": "Which rule?"}
+            ],
+        }
+    )
+    compiler = TrackingCompiler()
+    retrieval = FakeDocumentRetrieval([])
+    context = CountingContextBuilder()
+    app.dependency_overrides[get_prompt_generation_service] = lambda: make_service(
+        backend, compiler, retrieval, context
+    )
+
+    response = client.post(
+        "/api/v1/prompts/generate",
+        json={
+            "input": "Ask about the final exam.",
+            "language": "en",
+            "documentIds": ["syllabus-1"],
+        },
+    )
+
+    assert response.status_code == 200
+    assert backend.request is not None
+    assert backend.request.document_context is None
+    assert backend.request.document_context_requested is True
+    assert "do not assert a fact" in backend.request.instructions
+    assert response.json()["promptSpec"].get("sources") is None
+    assert "SOURCE CONTEXT" not in response.json()["compiledPrompt"]
+
+
+@pytest.mark.parametrize(
+    ("error", "status_code", "code"),
+    [
+        (DocumentNotFoundError("outside workspace"), 404, "document_not_found"),
+        (RetrievalDocumentNotReadyError("not embedded"), 409, "retrieval_document_not_ready"),
+    ],
+)
+def test_document_aware_generation_validates_document_scope_and_readiness(
+    client: TestClient, error: Exception, status_code: int, code: str
+) -> None:
+    backend = FakeStructuredAnalysisBackend(
+        result={"task": {"type": "general", "objective": "Help."}, "language": "en"}
+    )
+    compiler = TrackingCompiler()
+    app.dependency_overrides[get_prompt_generation_service] = lambda: make_service(
+        backend, compiler, FakeDocumentRetrieval(error=error), CountingContextBuilder()
+    )
+
+    response = client.post(
+        "/api/v1/prompts/generate",
+        json={"input": "Use my document.", "language": "en", "documentIds": ["document-1"]},
+    )
+
+    assert response.status_code == status_code
+    assert response.json()["error"]["code"] == code
+    assert backend.calls == 0
 
 
 def test_required_clarification_does_not_compile(client: TestClient) -> None:
@@ -241,47 +378,3 @@ def test_invalid_structured_provider_output_is_mapped(client: TestClient) -> Non
 
     assert response.status_code == 502
     assert response.json()["error"]["code"] == "invalid_analysis_output"
-
-
-def test_openai_adapter_uses_one_responses_structured_output_request() -> None:
-    fake_client = FakeOpenAIClient(
-        {"task": {"type": "general", "objective": "Help me."}, "language": "en"}
-    )
-    backend = OpenAIResponsesStructuredAnalysisBackend(
-        api_key="test-key",
-        model="test-model",
-        timeout_seconds=1,
-        client=cast(OpenAI, fake_client),
-    )
-    result = backend.analyze(
-        StructuredAnalysisRequest(input=IntentAnalysisInput(raw_request="Help me.", language="en"))
-    )
-
-    assert result == {"task": {"type": "general", "objective": "Help me."}, "language": "en"}
-    assert len(fake_client.responses.calls) == 1
-    assert fake_client.responses.calls[0]["text_format"].__name__ == "PromptSpec"
-    assert fake_client.responses.calls[0]["store"] is False
-
-
-def test_openai_adapter_includes_preset_as_a_default_hint() -> None:
-    fake_client = FakeOpenAIClient(
-        {"task": {"type": "general", "objective": "Help me."}, "language": "en"}
-    )
-    backend = OpenAIResponsesStructuredAnalysisBackend(
-        api_key="test-key",
-        model="test-model",
-        timeout_seconds=1,
-        client=cast(OpenAI, fake_client),
-    )
-
-    from prompt_engine.presets import get_task_preset
-
-    backend.analyze(
-        StructuredAnalysisRequest(
-            input=IntentAnalysisInput(raw_request="Help me.", language="en"),
-            preset=get_task_preset("write-email"),
-        )
-    )
-
-    assert "Optional quick-start preset" in str(fake_client.responses.calls[0]["input"])
-    assert "writing.email" in str(fake_client.responses.calls[0]["input"])

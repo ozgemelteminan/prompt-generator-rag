@@ -25,11 +25,17 @@ from app.api.v1.dependencies import (
 )
 from app.core.errors import ApplicationError
 from app.db.models import PromptExecutionRecord, PromptFeedbackRecord, PromptGenerationRecord
+from app.repositories.documents import DocumentNotFoundError
 from app.repositories.prompt_history import PromptRecordNotFoundError, as_iso
 from app.repositories.usage import UsageAccountingError, UsageQuotaExceededError
 from app.services.prompt_execution import PromptExecutionService
 from app.services.prompt_generation import PromptGenerationResult, PromptGenerationService
 from app.services.prompt_history import PromptHistoryService
+from app.services.retrieval import (
+    RetrievalDocumentNotReadyError,
+    RetrievalEmbeddingUnavailableError,
+    RetrievalError,
+)
 from app.services.usage import RateLimitExceededError
 
 router = APIRouter(prefix="/prompts", tags=["prompts"])
@@ -44,6 +50,7 @@ class GeneratePromptRequest(ApiModel):
     input: str = Field(min_length=1)
     language: Literal["tr", "en"]
     preset_id: str | None = None
+    document_ids: list[str] = Field(default_factory=list)
 
 
 class GeneratePromptResponse(ApiModel):
@@ -128,7 +135,10 @@ def generate_prompt(
 ) -> GeneratePromptResponse:
     try:
         result = service.generate(
-            request.input, language=request.language, preset_id=request.preset_id
+            request.input,
+            language=request.language,
+            preset_id=request.preset_id,
+            document_ids=tuple(request.document_ids),
         )
     except (EmptyRawRequestError, InvalidAnalysisInputError, UnknownTaskPresetError) as error:
         raise ApplicationError(
@@ -153,6 +163,28 @@ def generate_prompt(
             code="incomplete_specification",
             message="Required information is missing before prompt generation.",
             status_code=409,
+        ) from error
+    except DocumentNotFoundError as error:
+        raise ApplicationError(
+            code="document_not_found", message="The document was not found.", status_code=404
+        ) from error
+    except RetrievalDocumentNotReadyError as error:
+        raise ApplicationError(
+            code="retrieval_document_not_ready",
+            message="The requested document is not embedded.",
+            status_code=409,
+        ) from error
+    except RetrievalEmbeddingUnavailableError as error:
+        raise ApplicationError(
+            code="embedding_model_unavailable",
+            message="The embedding model is unavailable.",
+            status_code=503,
+        ) from error
+    except RetrievalError as error:
+        raise ApplicationError(
+            code="retrieval_failed",
+            message="Dense retrieval could not be completed.",
+            status_code=500,
         ) from error
     except (RateLimitExceededError, UsageQuotaExceededError, UsageAccountingError) as error:
         _raise_usage_error(error)

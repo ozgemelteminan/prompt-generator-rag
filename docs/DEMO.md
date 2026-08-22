@@ -28,7 +28,8 @@ Alembic, PostgreSQL/pgvector, and SentenceTransformers.
 
 Follow the concise local setup in the [README](../README.md#local-development).
 For a demo that includes analysis, execution, document embedding, and grounded
-generation, provide a valid `OPENAI_API_KEY`, a migrated PostgreSQL + pgvector
+generation, provide a valid selected-provider key (`GROQ_API_KEY` by default,
+or `GEMINI_API_KEY` plus `GEMINI_MODEL`), a migrated PostgreSQL + pgvector
 database, and an environment capable of loading the E5 embedding model. Use the
 [deployment guide](DEPLOYMENT.md) for containerized startup and persistence.
 

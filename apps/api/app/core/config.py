@@ -23,10 +23,12 @@ class Settings(BaseSettings):
         "postgresql+psycopg://promptforge:local-development-only@localhost:5432/promptforge"
     )
     cors_origins: list[str] = ["http://localhost:3000"]
-    openai_api_key: SecretStr | None = None
-    openai_model: str = "gpt-4.1-mini"
-    openai_execution_model: str | None = None
-    openai_timeout_seconds: float = Field(default=30.0, gt=0)
+    llm_provider: Literal["groq", "gemini"] = "groq"
+    groq_api_key: SecretStr | None = None
+    groq_model: str = "openai/gpt-oss-120b"
+    gemini_api_key: SecretStr | None = None
+    gemini_model: str | None = None
+    llm_timeout_seconds: float = Field(default=30.0, gt=0)
     execution_max_input_characters: int = Field(default=20_000, gt=0)
     local_workspace_id: str = Field(default="local-workspace", min_length=1)
     rate_limit_generate_requests: int = Field(default=10, gt=0)
@@ -48,11 +50,6 @@ class Settings(BaseSettings):
     hnsw_ef_search: int = Field(default=100, gt=0)
     rag_context_max_tokens: int = Field(default=2_000, gt=0)
 
-    @property
-    def resolved_openai_execution_model(self) -> str:
-        """Use a dedicated execution model when configured, else retain the existing default."""
-        return self.openai_execution_model or self.openai_model
-
     @field_validator("cors_origins", mode="before")
     @classmethod
     def parse_cors_origins(cls, value: str | list[str]) -> list[str]:
@@ -69,6 +66,11 @@ class Settings(BaseSettings):
     @field_validator("embedding_device", mode="before")
     @classmethod
     def normalize_embedding_device(cls, value: str | None) -> str | None:
+        return value.strip() or None if isinstance(value, str) else value
+
+    @field_validator("groq_api_key", "gemini_api_key", "gemini_model", mode="before")
+    @classmethod
+    def normalize_optional_provider_values(cls, value: str | None) -> str | None:
         return value.strip() or None if isinstance(value, str) else value
 
     @model_validator(mode="after")

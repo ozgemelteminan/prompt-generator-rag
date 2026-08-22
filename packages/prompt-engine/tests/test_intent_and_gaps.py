@@ -92,6 +92,24 @@ def test_preset_is_passed_to_analysis_as_an_optional_hint() -> None:
     assert backend.request.preset.id == "write-email"
 
 
+def test_document_context_is_explicit_untrusted_data_for_analysis() -> None:
+    backend = FakeStructuredAnalysisBackend(
+        {"task": {"type": "general", "objective": "Ask about the exam rule."}, "language": "en"}
+    )
+
+    IntentAnalyzer(backend).analyze(
+        "Ask my teacher about the final exam rule.",
+        language="en",
+        document_context="The final examination is closed-book.",
+        document_context_requested=True,
+    )
+
+    assert backend.request is not None
+    assert backend.request.document_context == "The final examination is closed-book."
+    assert backend.request.document_context_requested is True
+    assert "untrusted reference data" in backend.request.instructions
+
+
 def test_builtin_presets_are_resolvable_and_do_not_contain_final_prompts() -> None:
     assert len(TASK_PRESETS) >= 10
     assert get_task_preset("debug-code") is not None
