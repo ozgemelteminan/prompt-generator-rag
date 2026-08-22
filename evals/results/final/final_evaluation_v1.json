@@ -1,0 +1,295 @@
+{
+  "reportVersion": "m6.5",
+  "sources": {
+    "chunking": "chunking/chunking_results_v1.json",
+    "embeddings": "embeddings/embedding_results_v1.json",
+    "retrieval": "retrieval/sparse_dense_results_v1.json",
+    "hybrid": "hybrid/hybrid_rrf_results_v1.json",
+    "reranking": "reranking/reranker_results_v1.json",
+    "ablation": "final/m4_full_ablation_v1.json",
+    "parity": "final/production_rag_parity_v1.json",
+    "answer": "final/answer_eval_v1.json",
+    "security": "final/security_eval_v1.json",
+    "operational": "final/operational_eval_v1.json"
+  },
+  "finalArchitecture": {
+    "pipeline": [
+      "StructureAwareChunker(350/500/40)",
+      "intfloat/multilingual-e5-large-instruct",
+      "PostgreSQL + pgvector dense retrieval",
+      "Context Builder",
+      "grounded generation",
+      "citation validation"
+    ],
+    "selectionEvidence": {
+      "structure_aware_mrr": 0.8988095238095238,
+      "fixed_chunking_mrr": 0.8440476190476192,
+      "e5_mrr": 0.8700396825396824,
+      "dense_mrr": 0.8700396825396824,
+      "hybrid_mrr": 0.8773951247165532,
+      "dense_reranker_recall_at_5": 0.8988095238095238,
+      "dense_recall_at_5": 0.9583333333333334
+    },
+    "decisions": {
+      "dense_default": "Do not make RRF the M5 default: the measured ranking gain is small, recall is unchanged, and no Dense miss was recovered.",
+      "reranker": "Exclude BAAI/bge-reranker-v2-m3 from M5: this tested configuration reduced Recall@5 and nDCG@10."
+    }
+  },
+  "realExperimentalResults": {
+    "classification": "M4 benchmark/model results from committed official artifacts.",
+    "chunking": [
+      {
+        "name": "fixed",
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.8440476190476192,
+        "ndcg_at_10": 0.7791640447811415
+      },
+      {
+        "name": "recursive",
+        "recall_at_5": 0.9761904761904762,
+        "recall_at_10": 1.0,
+        "hit_rate_at_5": 0.9761904761904762,
+        "mrr": 0.8313492063492063,
+        "ndcg_at_10": 0.7699292704387682
+      },
+      {
+        "name": "production_structure_aware",
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.8988095238095238,
+        "ndcg_at_10": 0.8178030239799219
+      }
+    ],
+    "embeddings": [
+      {
+        "model_key": "gte_multilingual_base",
+        "model_id": "Alibaba-NLP/gte-multilingual-base",
+        "recall_at_5": 0.9047619047619048,
+        "recall_at_10": 0.9702380952380952,
+        "hit_rate_at_5": 0.9166666666666666,
+        "mrr": 0.8020171957671958,
+        "ndcg_at_10": 0.7898731407518034,
+        "required_block_coverage_at_5": 0.9047619047619048,
+        "required_block_coverage_at_10": 0.9702380952380952
+      },
+      {
+        "model_key": "bge_m3",
+        "model_id": "BAAI/bge-m3",
+        "recall_at_5": 0.9047619047619048,
+        "recall_at_10": 0.9821428571428571,
+        "hit_rate_at_5": 0.9166666666666666,
+        "mrr": 0.828188775510204,
+        "ndcg_at_10": 0.8123131846156646,
+        "required_block_coverage_at_5": 0.9047619047619048,
+        "required_block_coverage_at_10": 0.9821428571428571
+      },
+      {
+        "model_key": "multilingual_e5_large_instruct",
+        "model_id": "intfloat/multilingual-e5-large-instruct",
+        "recall_at_5": 0.9583333333333334,
+        "recall_at_10": 1.0,
+        "hit_rate_at_5": 0.9642857142857143,
+        "mrr": 0.8700396825396824,
+        "ndcg_at_10": 0.851616549391461,
+        "required_block_coverage_at_5": 0.9583333333333334,
+        "required_block_coverage_at_10": 1.0
+      },
+      {
+        "model_key": "turkish_e5_large",
+        "model_id": "ytu-ce-cosmos/turkish-e5-large",
+        "recall_at_5": 0.9345238095238095,
+        "recall_at_10": 0.9880952380952381,
+        "hit_rate_at_5": 0.9404761904761905,
+        "mrr": 0.8173520923520924,
+        "ndcg_at_10": 0.8066146385980945,
+        "required_block_coverage_at_5": 0.9345238095238095,
+        "required_block_coverage_at_10": 0.9880952380952381
+      }
+    ],
+    "retrievalAblation": [
+      {
+        "system": "Structure-aware + E5 Dense",
+        "recall_at_5": 0.9583333333333334,
+        "recall_at_10": 1.0,
+        "mrr": 0.8700396825396824,
+        "ndcg_at_10": 0.851616549391461,
+        "hit_rate_at_5": 0.9642857142857143,
+        "required_block_coverage_at_5": 0.9583333333333334,
+        "required_block_coverage_at_10": 1.0,
+        "tr_mrr": 0.9404761904761905,
+        "en_mrr": 0.7996031746031746
+      },
+      {
+        "system": "Structure-aware + BM25",
+        "recall_at_5": 0.9107142857142857,
+        "recall_at_10": 0.9583333333333334,
+        "mrr": 0.8445767195767195,
+        "ndcg_at_10": 0.8253427136056326,
+        "hit_rate_at_5": 0.9166666666666666,
+        "required_block_coverage_at_5": 0.9107142857142857,
+        "required_block_coverage_at_10": 0.9583333333333334,
+        "tr_mrr": 0.9384920634920635,
+        "en_mrr": 0.7506613756613757
+      },
+      {
+        "system": "Structure-aware + E5 Dense + BM25 + RRF",
+        "recall_at_5": 0.9583333333333334,
+        "recall_at_10": 1.0,
+        "mrr": 0.8773951247165532,
+        "ndcg_at_10": 0.8568059012307988,
+        "hit_rate_at_5": 0.9642857142857143,
+        "required_block_coverage_at_5": 0.9583333333333334,
+        "required_block_coverage_at_10": 1.0,
+        "tr_mrr": 0.9619047619047618,
+        "en_mrr": 0.7928854875283446
+      },
+      {
+        "system": "Dense + Reranker",
+        "recall_at_5": 0.8988095238095238,
+        "recall_at_10": 0.9821428571428571,
+        "mrr": 0.8737197656840514,
+        "ndcg_at_10": 0.8448265424350235,
+        "hit_rate_at_5": 0.9047619047619048,
+        "required_block_coverage_at_5": 0.8988095238095238,
+        "required_block_coverage_at_10": 0.9821428571428571,
+        "tr_mrr": 0.9722222222222223,
+        "en_mrr": 0.7752173091458806
+      },
+      {
+        "system": "Hybrid RRF + Reranker",
+        "recall_at_5": 0.8988095238095238,
+        "recall_at_10": 0.9821428571428571,
+        "mrr": 0.8737197656840514,
+        "ndcg_at_10": 0.8448265424350235,
+        "hit_rate_at_5": 0.9047619047619048,
+        "required_block_coverage_at_5": 0.8988095238095238,
+        "required_block_coverage_at_10": 0.9821428571428571,
+        "tr_mrr": 0.9722222222222223,
+        "en_mrr": 0.7752173091458806
+      }
+    ]
+  },
+  "deterministicHarnessValidation": {
+    "parity": {
+      "status": "passed",
+      "passed_checks": 10,
+      "total_checks": 10
+    },
+    "answerCitation": {
+      "status": "fixture_only",
+      "overall": {
+        "case_count": 12,
+        "answer_correctness": 1.0,
+        "citation_validity": 1.0,
+        "citation_correctness": 1.0,
+        "citation_completeness": 1.0,
+        "faithfulness": 1.0,
+        "insufficient_evidence_success": 1.0
+      }
+    },
+    "security": {
+      "status": "deterministic_fixture_run",
+      "overall": {
+        "passed": 10,
+        "total": 10
+      }
+    },
+    "operational": {
+      "local_status": "completed",
+      "successful_ask": {
+        "query_embedding_calls": 1,
+        "retrieval_calls": 1,
+        "context_build_calls": 1,
+        "generation_calls": 1,
+        "passed": true
+      },
+      "insufficient_evidence": {
+        "query_embedding_calls": 1,
+        "retrieval_calls": 1,
+        "context_build_calls": 1,
+        "generation_calls": 0,
+        "passed": true
+      },
+      "latency": {
+        "query_embedding": {
+          "count": 1,
+          "mean_ms": 0.005458015948534012,
+          "p50_ms": 0.005458015948534012,
+          "p95_ms": 0.005458015948534012,
+          "min_ms": 0.005458015948534012,
+          "max_ms": 0.005458015948534012
+        },
+        "retrieval": {
+          "count": 1,
+          "mean_ms": 2.165792044252157,
+          "p50_ms": 2.165792044252157,
+          "p95_ms": 2.165792044252157,
+          "min_ms": 2.165792044252157,
+          "max_ms": 2.165792044252157
+        },
+        "context_build": {
+          "count": 1,
+          "mean_ms": 0.03445800393819809,
+          "p50_ms": 0.03445800393819809,
+          "p95_ms": 0.03445800393819809,
+          "min_ms": 0.03445800393819809,
+          "max_ms": 0.03445800393819809
+        },
+        "generation": {
+          "count": 1,
+          "mean_ms": 0.002333894371986389,
+          "p50_ms": 0.002333894371986389,
+          "p95_ms": 0.002333894371986389,
+          "min_ms": 0.002333894371986389,
+          "max_ms": 0.002333894371986389
+        },
+        "total_ask": {
+          "count": 1,
+          "mean_ms": 2.2369171492755413,
+          "p50_ms": 2.2369171492755413,
+          "p95_ms": 2.2369171492755413,
+          "min_ms": 2.2369171492755413,
+          "max_ms": 2.2369171492755413
+        }
+      },
+      "token_cost": {
+        "input_tokens": null,
+        "output_tokens": null,
+        "total_tokens": null,
+        "generation_calls": 1,
+        "estimated_cost": null,
+        "currency": null,
+        "price_assumption": null
+      }
+    }
+  },
+  "pendingOptInRuns": {
+    "pgvector_smoke": {
+      "status": "not_run",
+      "reason": "Requires an explicitly provisioned PostgreSQL + pgvector database.",
+      "command": "RUN_PGVECTOR_SMOKE=1 PGVECTOR_SMOKE_DATABASE_URL=<postgresql+psycopg URL> PYTHONPATH=apps/api python -m pytest apps/api/tests/test_pgvector_smoke.py -q"
+    },
+    "answer_provider_run": true,
+    "operational_real_run": {
+      "status": "not_run",
+      "command": "PYTHONPATH=apps/api:packages/prompt-engine python -m evals.src.operational_eval --mode real --query '<question>' --document-id '<embedded-document-id>'",
+      "requirements": [
+        "DATABASE_URL to migrated PostgreSQL + pgvector",
+        "embedded scoped document",
+        "OPENAI_API_KEY",
+        "local E5 model runtime"
+      ]
+    }
+  },
+  "limitations": [
+    "M6 answer/citation scores are fixture-only unless an explicit provider run replaces that status.",
+    "The pgvector smoke test is opt-in and remains unexecuted when its artifact status is not_run.",
+    "M6 operational timings are local fixture measurements, not production latency targets.",
+    "The current provider-neutral execution adapter exposes no real provider token/cost metadata.",
+    "M6 security validation proves deterministic boundaries, not universal live-model prompt-injection robustness.",
+    "The reviewed retrieval corpus contains 84 Turkish/English queries and is not representative production traffic."
+  ]
+}
