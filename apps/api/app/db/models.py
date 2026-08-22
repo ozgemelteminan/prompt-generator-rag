@@ -16,6 +16,9 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.types import JSON
 
+from app.db.vector import PgVector
+from app.infrastructure.huggingface_embeddings import SELECTED_EMBEDDING_DIMENSION
+
 
 class Base(DeclarativeBase):
     """Base for application-owned relational tables."""
@@ -110,7 +113,7 @@ class DocumentRecord(Base):
         CheckConstraint(
             (
                 "ingestion_status IN ('uploaded', 'processing', 'parsed', 'chunking', "
-                "'chunked', 'ready', 'failed')"
+                "'chunked', 'embedding', 'embedded', 'ready', 'failed')"
             ),
             name="ck_documents_ingestion_status",
         ),
@@ -134,6 +137,9 @@ class DocumentRecord(Base):
         back_populates="document", cascade="all, delete-orphan"
     )
     chunks: Mapped[list["DocumentChunkRecord"]] = relationship(
+        back_populates="document", cascade="all, delete-orphan"
+    )
+    embeddings: Mapped[list["DocumentEmbeddingRecord"]] = relationship(
         back_populates="document", cascade="all, delete-orphan"
     )
 
@@ -186,3 +192,29 @@ class DocumentChunkRecord(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     document: Mapped[DocumentRecord] = relationship(back_populates="chunks")
+    embedding: Mapped["DocumentEmbeddingRecord | None"] = relationship(
+        back_populates="chunk", cascade="all, delete-orphan", uselist=False
+    )
+
+
+class DocumentEmbeddingRecord(Base):
+    __tablename__ = "document_embeddings"
+    __table_args__ = (UniqueConstraint("chunk_id", name="uq_document_embeddings_chunk_id"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    workspace_id: Mapped[str] = mapped_column(String(128), index=True)
+    document_id: Mapped[str] = mapped_column(
+        ForeignKey("documents.id", ondelete="CASCADE"), index=True
+    )
+    chunk_id: Mapped[str] = mapped_column(
+        ForeignKey("document_chunks.id", ondelete="CASCADE"), index=True
+    )
+    embedding: Mapped[list[float]] = mapped_column(PgVector(SELECTED_EMBEDDING_DIMENSION))
+    embedding_model_id: Mapped[str] = mapped_column(String(255))
+    embedding_dimension: Mapped[int] = mapped_column()
+    embedded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    document: Mapped[DocumentRecord] = relationship(back_populates="embeddings")
+    chunk: Mapped[DocumentChunkRecord] = relationship(back_populates="embedding")

@@ -36,6 +36,14 @@ class Settings(BaseSettings):
     chunk_target_tokens: int = Field(default=350, gt=0)
     chunk_max_tokens: int = Field(default=500, gt=0)
     chunk_overlap_tokens: int = Field(default=40, ge=0)
+    embedding_model_id: str = "intfloat/multilingual-e5-large-instruct"
+    embedding_batch_size: int = Field(default=32, gt=0)
+    embedding_device: str | None = None
+    embedding_max_input_tokens: int | None = Field(default=None, gt=0)
+    retrieval_default_limit: int = Field(default=5, gt=0)
+    retrieval_max_limit: int = Field(default=20, gt=0)
+    hnsw_ef_search: int = Field(default=100, gt=0)
+    rag_context_max_tokens: int = Field(default=2_000, gt=0)
 
     @property
     def resolved_openai_execution_model(self) -> str:
@@ -55,12 +63,19 @@ class Settings(BaseSettings):
         path = Path(value)
         return path if path.is_absolute() else REPOSITORY_ROOT / path
 
+    @field_validator("embedding_device", mode="before")
+    @classmethod
+    def normalize_embedding_device(cls, value: str | None) -> str | None:
+        return value.strip() or None if isinstance(value, str) else value
+
     @model_validator(mode="after")
     def validate_chunk_budgets(self) -> "Settings":
         if self.chunk_max_tokens < self.chunk_target_tokens:
             raise ValueError("CHUNK_MAX_TOKENS must be at least CHUNK_TARGET_TOKENS.")
         if self.chunk_overlap_tokens >= self.chunk_max_tokens:
             raise ValueError("CHUNK_OVERLAP_TOKENS must be smaller than CHUNK_MAX_TOKENS.")
+        if self.retrieval_default_limit > self.retrieval_max_limit:
+            raise ValueError("RETRIEVAL_DEFAULT_LIMIT must not exceed RETRIEVAL_MAX_LIMIT.")
         return self
 
 

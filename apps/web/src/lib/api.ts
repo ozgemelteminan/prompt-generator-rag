@@ -42,7 +42,7 @@ export type DocumentMetadata = {
   mediaType: string;
   size: number;
   language: string | null;
-  status: "uploaded" | "processing" | "parsed" | "chunking" | "chunked" | "ready" | "failed";
+  status: "uploaded" | "processing" | "parsed" | "chunking" | "chunked" | "embedding" | "embedded" | "ready" | "failed";
   checksum: string;
   createdAt: string;
   updatedAt: string;
@@ -199,4 +199,47 @@ export type DocumentChunkingResponse = {
 
 export function chunkDocument(id: string): Promise<DocumentChunkingResponse> {
   return requestApi(`/api/v1/documents/${id}/chunk`, { method: "POST" });
+}
+
+export type RagSource = {
+  citationId: number;
+  documentId: string;
+  chunkId: string;
+  filename: string;
+  pageStart: number | null;
+  pageEnd: number | null;
+  section: string | null;
+  heading: string | null;
+  excerpt: string;
+  similarity: number;
+};
+
+export type RagAskResponse = {
+  state: "answer" | "insufficient_evidence";
+  answer: string | null;
+  sources: RagSource[];
+};
+
+export function askDocuments(input: {
+  query: string;
+  documentIds?: string[];
+  limit?: number;
+}): Promise<RagAskResponse> {
+  return requestApi("/api/v1/rag/ask", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+}
+
+export type DocumentEmbeddingResponse = {
+  documentId: string;
+  status: "embedded";
+  chunkCount: number;
+  embeddedChunkCount: number;
+  embeddingModel: string;
+};
+
+export function embedDocument(id: string): Promise<DocumentEmbeddingResponse> {
+  return requestApi(`/api/v1/documents/${id}/embed`, { method: "POST" });
 }

@@ -14,16 +14,24 @@ from app.core.rate_limits import InMemoryRateLimiter
 from app.db.session import get_db_session
 from app.document_processing.chunking import StructureAwareChunker
 from app.document_processing.models import ChunkingConfig
+from app.infrastructure.huggingface_embeddings import (
+    SELECTED_EMBEDDING_DIMENSION,
+    MultilingualE5EmbeddingProvider,
+)
 from app.infrastructure.local_document_storage import LocalDocumentStorage
 from app.infrastructure.openai_analysis import OpenAIResponsesStructuredAnalysisBackend
 from app.infrastructure.openai_execution import OpenAIResponsesExecutionBackend
 from app.repositories.documents import DocumentRepository
 from app.repositories.prompt_history import PromptHistoryRepository
+from app.repositories.retrieval import DenseRetrievalRepository
 from app.repositories.usage import UsageRepository
+from app.services.context import ContextBuilder
 from app.services.documents import DocumentService
 from app.services.prompt_execution import PromptExecutionService
 from app.services.prompt_generation import PromptGenerationService
 from app.services.prompt_history import PromptHistoryService
+from app.services.rag import GroundedRagService
+from app.services.retrieval import DenseRetrievalService
 from app.services.usage import ActionPolicy, UsageGuard
 
 SettingsDependency = Annotated[Settings, Depends(get_settings)]
@@ -60,8 +68,23 @@ def get_document_repository(
     return DocumentRepository(session)
 
 
+def get_dense_retrieval_repository(
+    session: Annotated[Session, Depends(get_db_session)],
+) -> DenseRetrievalRepository:
+    return DenseRetrievalRepository(session)
+
+
 def get_document_storage(settings: SettingsDependency) -> LocalDocumentStorage:
     return LocalDocumentStorage(settings.document_storage_path)
+
+
+def get_embedding_provider(settings: SettingsDependency) -> MultilingualE5EmbeddingProvider:
+    return MultilingualE5EmbeddingProvider(
+        model_id=settings.embedding_model_id,
+        batch_size=settings.embedding_batch_size,
+        device=settings.embedding_device,
+        max_input_tokens=settings.embedding_max_input_tokens,
+    )
 
 
 def get_document_service(
@@ -69,6 +92,7 @@ def get_document_service(
     caller: Annotated[CallerContext, Depends(get_caller_context)],
     repository: Annotated[DocumentRepository, Depends(get_document_repository)],
     storage: Annotated[LocalDocumentStorage, Depends(get_document_storage)],
+    embedding_provider: Annotated[MultilingualE5EmbeddingProvider, Depends(get_embedding_provider)],
 ) -> DocumentService:
     return DocumentService(
         caller=caller,
@@ -82,6 +106,56 @@ def get_document_service(
                 overlap_tokens=settings.chunk_overlap_tokens,
             )
         ),
+        embedding_provider=embedding_provider,
+        embedding_batch_size=settings.embedding_batch_size,
+        embedding_dimension=SELECTED_EMBEDDING_DIMENSION,
+    )
+
+
+def get_dense_retrieval_service(
+    settings: SettingsDependency,
+    caller: Annotated[CallerContext, Depends(get_caller_context)],
+    document_repository: Annotated[DocumentRepository, Depends(get_document_repository)],
+    retrieval_repository: Annotated[
+        DenseRetrievalRepository, Depends(get_dense_retrieval_repository)
+    ],
+    embedding_provider: Annotated[MultilingualE5EmbeddingProvider, Depends(get_embedding_provider)],
+) -> DenseRetrievalService:
+    return DenseRetrievalService(
+        caller=caller,
+        document_repository=document_repository,
+        retrieval_repository=retrieval_repository,
+        embedding_provider=embedding_provider,
+        default_limit=settings.retrieval_default_limit,
+        max_limit=settings.retrieval_max_limit,
+        expected_dimension=SELECTED_EMBEDDING_DIMENSION,
+        hnsw_ef_search=settings.hnsw_ef_search,
+    )
+
+
+def get_context_builder(settings: SettingsDependency) -> ContextBuilder:
+    """Expose the configured deterministic builder for the future grounded workflow."""
+    return ContextBuilder(max_tokens=settings.rag_context_max_tokens)
+
+
+def get_grounded_rag_service(
+    settings: SettingsDependency,
+    retrieval_service: Annotated[DenseRetrievalService, Depends(get_dense_retrieval_service)],
+    context_builder: Annotated[ContextBuilder, Depends(get_context_builder)],
+) -> GroundedRagService:
+    backend = (
+        _UnconfiguredExecutionBackend()
+        if settings.openai_api_key is None
+        else OpenAIResponsesExecutionBackend(
+            api_key=settings.openai_api_key.get_secret_value(),
+            model=settings.resolved_openai_execution_model,
+            timeout_seconds=settings.openai_timeout_seconds,
+        )
+    )
+    return GroundedRagService(
+        retrieval_service=retrieval_service,
+        context_builder=context_builder,
+        generation_backend=backend,
     )
 
 

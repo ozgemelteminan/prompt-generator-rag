@@ -10,6 +10,9 @@ For detailed product requirements, architecture, milestones, data models, RAG be
 
 `MASTER_SPECIFICATION.md`
 
+For frontend/UI tasks, read `UI_DESIGN_SYSTEM.md`, read only task-relevant master-specification
+sections, and do not invent alternate visual systems.
+
 Do not load unrelated sections of the master specification unless needed for the current task.
 
 Priority in case of conflict:

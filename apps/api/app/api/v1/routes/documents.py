@@ -11,14 +11,19 @@ from app.infrastructure.local_document_storage import DocumentStorageError
 from app.repositories.documents import DocumentNotFoundError
 from app.services.documents import (
     DocumentChunkingError,
+    DocumentEmbeddingDimensionMismatchError,
+    DocumentEmbeddingError,
+    DocumentEmbeddingModelUnavailableError,
     DocumentEmptyError,
     DocumentInvalidFilenameError,
     DocumentNoExtractableTextError,
+    DocumentNotChunkedError,
     DocumentNotParsedError,
     DocumentParseError,
     DocumentService,
     DocumentTooLargeError,
     DocumentUnsupportedTypeError,
+    DocumentVectorPersistenceError,
 )
 
 router = APIRouter(prefix="/documents", tags=["documents"])
@@ -54,6 +59,16 @@ class DocumentChunkingResponse(BaseModel):
     average_token_count: float
     min_token_count: int
     max_token_count: int
+
+
+class DocumentEmbeddingResponse(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    document_id: str
+    status: str
+    chunk_count: int
+    embedded_chunk_count: int
+    embedding_model: str
 
 
 @router.post("", response_model=DocumentResponse, summary="Upload a document")
@@ -177,6 +192,58 @@ def chunk_document(
         average_token_count=result.statistics.average_token_count,
         min_token_count=result.statistics.min_token_count,
         max_token_count=result.statistics.max_token_count,
+    )
+
+
+@router.post(
+    "/{document_id}/embed",
+    response_model=DocumentEmbeddingResponse,
+    summary="Embed a chunked document",
+)
+def embed_document(
+    document_id: str,
+    service: Annotated[DocumentService, Depends(get_document_service)],
+) -> DocumentEmbeddingResponse:
+    try:
+        result = service.embed(document_id)
+    except DocumentNotFoundError as error:
+        raise ApplicationError(
+            code="document_not_found", message="The document was not found.", status_code=404
+        ) from error
+    except DocumentNotChunkedError as error:
+        raise ApplicationError(
+            code="document_not_chunked",
+            message="The document must be chunked before it can be embedded.",
+            status_code=409,
+        ) from error
+    except DocumentEmbeddingModelUnavailableError as error:
+        raise ApplicationError(
+            code="embedding_model_unavailable",
+            message="The embedding model is unavailable.",
+            status_code=503,
+        ) from error
+    except DocumentEmbeddingDimensionMismatchError as error:
+        raise ApplicationError(
+            code="embedding_dimension_mismatch",
+            message="The embedding output has an invalid dimension.",
+            status_code=422,
+        ) from error
+    except DocumentEmbeddingError as error:
+        raise ApplicationError(
+            code="embedding_failed", message="The document could not be embedded.", status_code=422
+        ) from error
+    except DocumentVectorPersistenceError as error:
+        raise ApplicationError(
+            code="vector_persistence_failed",
+            message="Document vectors could not be persisted.",
+            status_code=500,
+        ) from error
+    return DocumentEmbeddingResponse(
+        document_id=result.record.id,
+        status=result.record.ingestion_status,
+        chunk_count=result.chunk_count,
+        embedded_chunk_count=result.embedded_chunk_count,
+        embedding_model=result.embedding_model,
     )
 
 

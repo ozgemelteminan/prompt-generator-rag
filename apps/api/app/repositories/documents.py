@@ -1,11 +1,18 @@
 """Database persistence for workspace-scoped document metadata."""
 
+from __future__ import annotations
+
 from uuid import uuid4
 
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from app.db.models import DocumentBlockRecord, DocumentChunkRecord, DocumentRecord
+from app.db.models import (
+    DocumentBlockRecord,
+    DocumentChunkRecord,
+    DocumentEmbeddingRecord,
+    DocumentRecord,
+)
 from app.document_processing.models import DocumentChunk, NormalizedDocument, TextBlock
 
 
@@ -119,6 +126,56 @@ class DocumentRepository:
         record.ingestion_status = "chunking"
         self._session.commit()
         self._session.refresh(record)
+
+    def mark_embedding(self, record: DocumentRecord) -> None:
+        record.ingestion_status = "embedding"
+        self._session.commit()
+        self._session.refresh(record)
+
+    def get_chunks(self, record: DocumentRecord) -> tuple[DocumentChunkRecord, ...]:
+        return tuple(
+            self._session.scalars(
+                select(DocumentChunkRecord)
+                .where(DocumentChunkRecord.document_id == record.id)
+                .order_by(DocumentChunkRecord.chunk_index)
+            )
+        )
+
+    def replace_embeddings(
+        self,
+        record: DocumentRecord,
+        *,
+        embeddings: list[tuple[DocumentChunkRecord, list[float]]],
+        model_id: str,
+        dimension: int,
+    ) -> DocumentRecord:
+        try:
+            self._session.execute(
+                delete(DocumentEmbeddingRecord).where(
+                    DocumentEmbeddingRecord.document_id == record.id
+                )
+            )
+            self._session.add_all(
+                [
+                    DocumentEmbeddingRecord(
+                        id=str(uuid4()),
+                        workspace_id=record.workspace_id,
+                        document_id=record.id,
+                        chunk_id=chunk.id,
+                        embedding=vector,
+                        embedding_model_id=model_id,
+                        embedding_dimension=dimension,
+                    )
+                    for chunk, vector in embeddings
+                ]
+            )
+            record.ingestion_status = "embedded"
+            self._session.commit()
+        except Exception:
+            self._session.rollback()
+            raise
+        self._session.refresh(record)
+        return record
 
     def replace_chunks(self, record: DocumentRecord, chunks: tuple[DocumentChunk, ...]) -> None:
         try:

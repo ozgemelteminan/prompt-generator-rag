@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 
 import {
   chunkDocument,
+  embedDocument,
   listDocuments,
   processDocument,
   type DocumentMetadata,
@@ -28,6 +29,9 @@ const content = {
     chunk: "Parçala",
     chunking: "Parçalanıyor…",
     chunked: "Belge parçalandı",
+    embed: "Vektörleştir",
+    embedding: "Vektörleştiriliyor…",
+    embedded: "Belge vektörleştirildi",
   },
   en: {
     title: "Documents",
@@ -44,6 +48,9 @@ const content = {
     chunk: "Chunk",
     chunking: "Chunking…",
     chunked: "Document chunked",
+    embed: "Embed",
+    embedding: "Embedding…",
+    embedded: "Document embedded",
   },
 } as const;
 
@@ -56,6 +63,8 @@ export function DocumentsExperience() {
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [chunkingId, setChunkingId] = useState<string | null>(null);
   const [chunkCounts, setChunkCounts] = useState<Record<string, number>>({});
+  const [embeddingId, setEmbeddingId] = useState<string | null>(null);
+  const [embeddingDetails, setEmbeddingDetails] = useState<Record<string, { count: number; model: string }>>({});
   const [error, setError] = useState<PromptApiError | null>(null);
   const text = content[language];
 
@@ -114,6 +123,22 @@ export function DocumentsExperience() {
     }
   }
 
+  async function handleEmbed(document: DocumentMetadata) {
+    setEmbeddingId(document.id);
+    setSuccessMessage(null);
+    setError(null);
+    try {
+      const result = await embedDocument(document.id);
+      setDocuments((current) => current.map((item) => item.id === document.id ? { ...item, status: result.status } : item));
+      setEmbeddingDetails((current) => ({ ...current, [document.id]: { count: result.embeddedChunkCount, model: result.embeddingModel } }));
+      setSuccessMessage(`${text.embedded}: ${result.embeddedChunkCount}`);
+    } catch (reason) {
+      setError(reason instanceof PromptApiError ? reason : new PromptApiError(null, "Document embedding failed."));
+    } finally {
+      setEmbeddingId(null);
+    }
+  }
+
   return <section className="mx-auto max-w-4xl space-y-8 py-8">
     <header className="space-y-3"><p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">PromptForge</p><h1 className="text-4xl font-semibold text-white">{text.title}</h1><p className="text-slate-300">{text.description}</p><button className="text-sm text-cyan-200" onClick={() => setLanguage((current) => current === "en" ? "tr" : "en")} type="button">{language === "en" ? "Türkçe" : "English"}</button></header>
     <form className="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-700 bg-slate-900/70 p-5" onSubmit={handleUpload}>
@@ -122,6 +147,6 @@ export function DocumentsExperience() {
     </form>
     {successMessage && <p className="rounded-xl bg-emerald-300/10 p-4 text-emerald-100" role="status">{successMessage}</p>}
     {error && <p className="rounded-xl bg-rose-400/10 p-4 text-rose-100" role="alert">{localizedError(language, error.code, error.details)}</p>}
-    <div className="space-y-3">{documents.length === 0 ? <p className="text-slate-400">{text.empty}</p> : documents.map((document) => <article className="rounded-xl border border-slate-700 bg-slate-900/70 p-4" key={document.id}><div className="flex flex-wrap justify-between gap-3"><div><h2 className="font-medium text-white">{document.filename}</h2><p className="mt-1 text-sm text-slate-400">{document.mediaType} · {document.size.toLocaleString()} bytes · {new Date(document.createdAt).toLocaleString()}{document.language ? ` · ${document.language.toUpperCase()}` : ""}{chunkCounts[document.id] !== undefined ? ` · ${chunkCounts[document.id]} chunks` : ""}</p></div><div className="flex items-center gap-2"><span className="rounded-full bg-cyan-300/10 px-3 py-1 text-sm text-cyan-100">{text.status}: {document.status}</span>{(document.status === "uploaded" || document.status === "failed") && <button className="rounded-lg border border-cyan-300/50 px-3 py-1 text-sm text-cyan-100 disabled:opacity-60" disabled={processingId === document.id} onClick={() => void handleProcess(document)} type="button">{processingId === document.id ? text.processing : text.process}</button>}{document.status === "parsed" && <button className="rounded-lg border border-cyan-300/50 px-3 py-1 text-sm text-cyan-100 disabled:opacity-60" disabled={chunkingId === document.id} onClick={() => void handleChunk(document)} type="button">{chunkingId === document.id ? text.chunking : text.chunk}</button>}</div></div></article>)}</div>
+    <div className="space-y-3">{documents.length === 0 ? <p className="text-slate-400">{text.empty}</p> : documents.map((document) => <article className="rounded-xl border border-slate-700 bg-slate-900/70 p-4" key={document.id}><div className="flex flex-wrap justify-between gap-3"><div><h2 className="font-medium text-white">{document.filename}</h2><p className="mt-1 text-sm text-slate-400">{document.mediaType} · {document.size.toLocaleString()} bytes · {new Date(document.createdAt).toLocaleString()}{document.language ? ` · ${document.language.toUpperCase()}` : ""}{chunkCounts[document.id] !== undefined ? ` · ${chunkCounts[document.id]} chunks` : ""}{embeddingDetails[document.id] ? ` · ${embeddingDetails[document.id].count} embedded · ${embeddingDetails[document.id].model}` : ""}</p></div><div className="flex items-center gap-2"><span className="rounded-full bg-cyan-300/10 px-3 py-1 text-sm text-cyan-100">{text.status}: {document.status}</span>{(document.status === "uploaded" || document.status === "failed") && <button className="rounded-lg border border-cyan-300/50 px-3 py-1 text-sm text-cyan-100 disabled:opacity-60" disabled={processingId === document.id} onClick={() => void handleProcess(document)} type="button">{processingId === document.id ? text.processing : text.process}</button>}{document.status === "parsed" && <button className="rounded-lg border border-cyan-300/50 px-3 py-1 text-sm text-cyan-100 disabled:opacity-60" disabled={chunkingId === document.id} onClick={() => void handleChunk(document)} type="button">{chunkingId === document.id ? text.chunking : text.chunk}</button>}{document.status === "chunked" && <button className="rounded-lg border border-cyan-300/50 px-3 py-1 text-sm text-cyan-100 disabled:opacity-60" disabled={embeddingId === document.id} onClick={() => void handleEmbed(document)} type="button">{embeddingId === document.id ? text.embedding : text.embed}</button>}</div></div></article>)}</div>
   </section>;
 }

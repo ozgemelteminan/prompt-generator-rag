@@ -18,6 +18,11 @@ from app.document_processing.parsing import DocumentParserError
 from app.infrastructure.document_parsers import DocumentParserRegistry
 from app.infrastructure.local_document_storage import DocumentStorageError
 from app.repositories.documents import DocumentRepository
+from app.services.embeddings import (
+    EmbeddingProvider,
+    EmbeddingProviderError,
+    EmbeddingProviderUnavailableError,
+)
 
 
 class UploadSource(Protocol):
@@ -74,6 +79,26 @@ class DocumentChunkingError(DocumentProcessingError):
     pass
 
 
+class DocumentNotChunkedError(DocumentProcessingError):
+    pass
+
+
+class DocumentEmbeddingModelUnavailableError(DocumentProcessingError):
+    pass
+
+
+class DocumentEmbeddingError(DocumentProcessingError):
+    pass
+
+
+class DocumentEmbeddingDimensionMismatchError(DocumentProcessingError):
+    pass
+
+
+class DocumentVectorPersistenceError(DocumentProcessingError):
+    pass
+
+
 @dataclass(frozen=True)
 class DocumentUploadResult:
     record: DocumentRecord
@@ -84,6 +109,14 @@ class DocumentUploadResult:
 class DocumentChunkingResult:
     record: DocumentRecord
     statistics: ChunkStatistics
+
+
+@dataclass(frozen=True)
+class DocumentEmbeddingResult:
+    record: DocumentRecord
+    chunk_count: int
+    embedded_chunk_count: int
+    embedding_model: str
 
 
 class DocumentService:
@@ -98,6 +131,9 @@ class DocumentService:
         max_upload_bytes: int,
         parser_registry: DocumentParserRegistry | None = None,
         chunker: StructureAwareChunker | None = None,
+        embedding_provider: EmbeddingProvider | None = None,
+        embedding_batch_size: int = 32,
+        embedding_dimension: int | None = None,
     ) -> None:
         self._caller = caller
         self._repository = repository
@@ -105,6 +141,9 @@ class DocumentService:
         self._max_upload_bytes = max_upload_bytes
         self._parser_registry = parser_registry or DocumentParserRegistry()
         self._chunker = chunker or StructureAwareChunker(ChunkingConfig())
+        self._embedding_provider = embedding_provider
+        self._embedding_batch_size = embedding_batch_size
+        self._embedding_dimension = embedding_dimension
 
     async def upload(self, source: UploadSource) -> DocumentUploadResult:
         filename = _safe_filename(source.filename)
@@ -206,6 +245,62 @@ class DocumentService:
         except Exception as error:
             self._repository.mark_failed(record)
             raise DocumentChunkingError("Document chunking failed.") from error
+
+    def embed(self, document_id: str) -> DocumentEmbeddingResult:
+        record = self.get(document_id)
+        if record.ingestion_status not in {"chunked", "embedded"}:
+            raise DocumentNotChunkedError("Document must be chunked before embedding.")
+        if self._embedding_provider is None:
+            raise DocumentEmbeddingModelUnavailableError("Embedding model is not configured.")
+
+        chunks = self._repository.get_chunks(record)
+        if not chunks:
+            raise DocumentNotChunkedError("Document has no chunks to embed.")
+        self._repository.mark_embedding(record)
+        try:
+            vectors: list[list[float]] = []
+            for start in range(0, len(chunks), self._embedding_batch_size):
+                batch = chunks[start : start + self._embedding_batch_size]
+                vectors.extend(
+                    self._embedding_provider.embed_passages([chunk.text for chunk in batch])
+                )
+            dimension = self._embedding_provider.dimension
+        except EmbeddingProviderUnavailableError as error:
+            self._repository.mark_failed(record)
+            raise DocumentEmbeddingModelUnavailableError(
+                "Embedding model is unavailable."
+            ) from error
+        except EmbeddingProviderError as error:
+            self._repository.mark_failed(record)
+            raise DocumentEmbeddingError("Document embedding failed.") from error
+        except Exception as error:
+            self._repository.mark_failed(record)
+            raise DocumentEmbeddingError("Document embedding failed.") from error
+
+        expected_dimension = self._embedding_dimension or dimension
+        if (
+            len(vectors) != len(chunks)
+            or dimension != expected_dimension
+            or any(len(vector) != expected_dimension for vector in vectors)
+        ):
+            self._repository.mark_failed(record)
+            raise DocumentEmbeddingDimensionMismatchError("Embedding dimension is invalid.")
+        try:
+            persisted = self._repository.replace_embeddings(
+                record,
+                embeddings=list(zip(chunks, vectors, strict=True)),
+                model_id=self._embedding_provider.model_id,
+                dimension=dimension,
+            )
+        except Exception as error:
+            self._repository.mark_failed(record)
+            raise DocumentVectorPersistenceError("Vectors could not be persisted.") from error
+        return DocumentEmbeddingResult(
+            record=persisted,
+            chunk_count=len(chunks),
+            embedded_chunk_count=len(vectors),
+            embedding_model=self._embedding_provider.model_id,
+        )
 
 
 def _safe_filename(filename: str | None) -> str:

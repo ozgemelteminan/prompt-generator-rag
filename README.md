@@ -1,8 +1,9 @@
 # PromptForge
 
 PromptForge is a planned Turkish/English platform for turning a user’s request
-into a well-structured prompt. This repository currently implements **M4.2 —
-Embedding Benchmark**. Production retrieval, RAG, and authentication are not implemented.
+into a well-structured prompt. This repository currently implements **M5.1 —
+Production Embeddings + pgvector Indexing**. Query retrieval, RAG generation, and
+authentication are not implemented.
 
 ## Architecture
 
@@ -309,6 +310,78 @@ DELETE /api/v1/documents/{id}
 Deletion removes the stored original before removing its database row; a storage failure
 leaves the metadata intact rather than silently creating an inconsistent record.
 
+## Production embeddings and pgvector indexing (M5.1)
+
+M5.1 adds the first production-ready vector step, without adding search or RAG:
+
+```text
+chunked document → raw-passage E5 embeddings → pgvector rows → HNSW cosine index → embedded
+```
+
+`POST /api/v1/documents/{id}/embed` is workspace-scoped and accepts only a chunked (or
+already embedded) document. It loads chunks in stable order, embeds raw chunk text in
+configuration-driven batches with `intfloat/multilingual-e5-large-instruct`, normalizes
+the vectors, and transactionally replaces the document's current vector rows. It returns
+only document metadata, counts, status, and model ID; vectors are never exposed over HTTP.
+
+The `document_embeddings` table preserves chunk/document/workspace references, model ID,
+dimension, and timestamp. It stores native `vector(1024)` values and owns a cosine HNSW
+index (`vector_cosine_ops`). Re-embedding replaces rows rather than creating duplicates;
+if model loading, embedding, dimensions, or persistence fail, the document is never marked
+`embedded`. This is dense-only indexing; M5.2 must add any query embedding and retrieval
+behavior explicitly.
+
+```text
+POST /api/v1/documents/{id}/embed
+```
+
+## Production dense retrieval (M5.2)
+
+`POST /api/v1/retrieval/search` searches only embeddings belonging to the current local
+workspace and current configured embedding model. It embeds the query exactly once using:
+
+```text
+Instruct: Given a web search query, retrieve relevant passages that answer the query
+Query: <query>
+```
+
+Passages remain raw chunk text. PostgreSQL applies workspace, model, dimension, and optional
+document filters in the vector query before ordering by `embedding <=> query_vector` and
+limiting results. The default top-k is `5`, maximum is `20`, configured through
+`RETRIEVAL_DEFAULT_LIMIT` and `RETRIEVAL_MAX_LIMIT`. HNSW settings use transaction-local
+`hnsw.ef_search` and strict-order iterative scan configuration. Returned chunks contain source
+metadata and distance/similarity only—never vectors, citations, context assembly, or answers.
+An explicitly selected document must be embedded; an embedded document with stale/incompatible
+model vectors produces no results rather than mixing vector spaces.
+
+## Context package and citation provenance (M5.3)
+
+M5.3 converts the already ranked dense-retrieval chunks into a deterministic, provider-neutral
+context package for a future grounded-generation layer. It never retrieves, embeds, or calls a
+model again. In retrieval order, it removes duplicate chunk IDs, normalized-identical text, and
+same-document source-block ranges with at least 80% overlap of the smaller range. Distinct nearby
+evidence remains available.
+
+`RAG_CONTEXT_MAX_TOKENS` (default `2000`) is enforced with a local Unicode-aware token counter;
+sources that do not wholly fit are omitted rather than truncated or summarized. Included sources
+receive sequential `[1]`, `[2]`, … labels and retain document/chunk IDs, filename, page range when
+present, section, heading, similarity, and source-block range. Context is explicitly marked as
+**untrusted data**: document text is evidence, never application instructions. Empty, deduplicated,
+or over-budget inputs yield an `insufficient_evidence` package for M5.4 to handle safely.
+
+## Grounded document answers (M5.4)
+
+`POST /api/v1/rag/ask` connects the existing dense retrieval and context builder to one
+provider-neutral generation call. A request retrieves once, builds one context package, and makes
+no generation call when evidence is insufficient. The generation instruction requires answers only
+from supplied sources, treats document text as untrusted data, and permits only the context
+package’s sequential citation IDs. Returned source provenance includes citation/document/chunk IDs,
+filename, page range, section, heading, excerpt, and similarity; vectors and storage details remain
+private. Invalid generated citations fail safely rather than being repaired or fabricated.
+
+Usage accounting is intentionally deferred: the current guard has only prompt-generation and
+prompt-execution actions, so M5.4 does not misclassify grounded-generation cost under either quota.
+
 ## Chunking evaluation (M4.1)
 
 M4.1 is an offline experiment, not a production retrieval feature. It compares an
@@ -406,6 +479,20 @@ per-query rescue/harm diagnostics.
 Run [05_reranker_benchmark.ipynb](/Users/ozge/Documents/ChatGPT/prompt-generator-rag/notebooks/05_reranker_benchmark.ipynb)
 in a fresh Colab runtime after setting its repository URL/ref. It writes only real-run
 artifacts to `evals/results/reranking/`; committed files are placeholders.
+
+## Full M4 ablation and recommendation (M4.6)
+
+M4.6 consolidates the completed official M4 artifacts without rerunning models. The
+measured M4 default carried forward is StructureAwareChunker (350/500/40) with
+`intfloat/multilingual-e5-large-instruct` dense retrieval. Hybrid RRF is retained for
+future validation, not selected as the default: its ranking gain was small, recall was
+unchanged, English MRR declined, and it recovered no Dense miss. The tested
+`BAAI/bge-reranker-v2-m3` is excluded because it reduced key recall/ranking metrics in
+the evaluated configuration.
+
+See [m4_recommendation_v1.md](/Users/ozge/Documents/ChatGPT/prompt-generator-rag/evals/results/final/m4_recommendation_v1.md)
+or run [06_full_ablation.ipynb](/Users/ozge/Documents/ChatGPT/prompt-generator-rag/notebooks/06_full_ablation.ipynb)
+to regenerate the consolidated CSV/JSON/Markdown from committed results only.
 
 ## Prerequisites
 

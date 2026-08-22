@@ -17,6 +17,9 @@ English
 
 This document is the product and architecture source of truth.
 
+`UI_DESIGN_SYSTEM.md` is the source of truth for visual design, layout, component styling, and
+frontend UX conventions.
+
 ---
 
 # 2. Product Vision
