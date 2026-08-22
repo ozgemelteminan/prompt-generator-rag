@@ -14,16 +14,16 @@ const items = [
 
 export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
-  const navigation = <nav aria-label="Main navigation" className="flex gap-1 lg:flex-col">
+  const navigation = <nav aria-label="Main navigation" className="flex gap-1 lg:flex-col lg:gap-1.5">
     {items.map((item) => {
       const active = pathname === item.href;
-      return <Link aria-current={active ? "page" : undefined} className={`pf-link shrink-0 rounded-lg px-3 py-2 text-sm font-semibold transition ${active ? "bg-[#6F7454] text-[#FBF9F3]" : "text-[#454A35] hover:bg-[#FBF9F3]"}`} href={item.href} key={item.href}>{item.label}</Link>;
+      return <Link aria-current={active ? "page" : undefined} className={`pf-link shrink-0 rounded-lg px-3 py-2 text-sm font-semibold transition lg:px-4 lg:py-3 ${active ? "bg-[#6F7454] text-[#FBF9F3]" : "text-[#454A35] hover:bg-[#FBF9F3]"}`} href={item.href} key={item.href}>{item.label}</Link>;
     })}
   </nav>;
 
-  return <div className="min-h-screen lg:grid lg:grid-cols-[15rem_minmax(0,1fr)]">
-    <aside className="hidden min-h-screen flex-col border-r bg-[#ECE6D8] px-5 py-7 lg:flex">
-      <div className="mb-10 px-3"><p className="text-lg font-semibold tracking-tight text-[#272A22]">Prompt Generator</p><p className="mt-1 text-xs text-[#747568]">Structured prompt workspace</p></div>
+  return <div className="min-h-screen lg:grid lg:grid-cols-[20rem_minmax(0,1fr)] 2xl:grid-cols-[22rem_minmax(0,1fr)]">
+    <aside className="hidden min-h-screen flex-col border-r bg-[#ECE6D8] px-7 py-8 lg:flex">
+      <div className="mb-12 px-4"><p className="text-xl font-semibold tracking-tight text-[#272A22]">Prompt Generator</p><p className="mt-2 text-xs leading-5 text-[#747568]">Structured prompt workspace</p></div>
       {navigation}
       <div className="mt-auto"><UsageStatus /></div>
     </aside>
