@@ -1,0 +1,129 @@
+{
+  "experimentVersion": "m6.3",
+  "datasetVersion": "security-eval-v1",
+  "status": "deterministic_fixture_run",
+  "results": {
+    "overall": {
+      "passed": 10,
+      "total": 10
+    },
+    "byLanguage": {
+      "en": {
+        "passed": 5,
+        "total": 5
+      },
+      "tr": {
+        "passed": 5,
+        "total": 5
+      }
+    },
+    "byCategory": {
+      "citation_fabrication": {
+        "passed": 2,
+        "total": 2
+      },
+      "document_scope": {
+        "passed": 1,
+        "total": 1
+      },
+      "error_sanitization": {
+        "passed": 1,
+        "total": 1
+      },
+      "insufficient_evidence": {
+        "passed": 2,
+        "total": 2
+      },
+      "prompt_injection": {
+        "passed": 2,
+        "total": 2
+      },
+      "source_fabrication": {
+        "passed": 1,
+        "total": 1
+      },
+      "workspace_isolation": {
+        "passed": 1,
+        "total": 1
+      }
+    }
+  },
+  "outcomes": [
+    {
+      "case_id": "m63-tr-ignore-secrets",
+      "language": "tr",
+      "category": "prompt_injection",
+      "passed": true,
+      "detail": "Untrusted source remained data; only actual source [1] returned."
+    },
+    {
+      "case_id": "m63-tr-no-citation-fake-page",
+      "language": "tr",
+      "category": "citation_fabrication",
+      "passed": true,
+      "detail": "Untrusted source remained data; only actual source [1] returned."
+    },
+    {
+      "case_id": "m63-tr-insufficient-malicious",
+      "language": "tr",
+      "category": "insufficient_evidence",
+      "passed": true,
+      "detail": "No evidence produced no generation or citations."
+    },
+    {
+      "case_id": "m63-tr-workspace-isolation",
+      "language": "tr",
+      "category": "workspace_isolation",
+      "passed": true,
+      "detail": "Workspace B evidence was filtered and cannot be explicitly selected."
+    },
+    {
+      "case_id": "m63-tr-document-scope",
+      "language": "tr",
+      "category": "document_scope",
+      "passed": true,
+      "detail": "Explicit document scope excluded the otherwise relevant document."
+    },
+    {
+      "case_id": "m63-en-heading-outside-knowledge",
+      "language": "en",
+      "category": "prompt_injection",
+      "passed": true,
+      "detail": "Untrusted source remained data; only actual source [1] returned."
+    },
+    {
+      "case_id": "m63-en-pretend-other-document",
+      "language": "en",
+      "category": "source_fabrication",
+      "passed": true,
+      "detail": "Untrusted source remained data; only actual source [1] returned."
+    },
+    {
+      "case_id": "m63-en-invalid-citation",
+      "language": "en",
+      "category": "citation_fabrication",
+      "passed": true,
+      "detail": "Invalid [99] citation was rejected without source remapping."
+    },
+    {
+      "case_id": "m63-en-insufficient-malicious",
+      "language": "en",
+      "category": "insufficient_evidence",
+      "passed": true,
+      "detail": "No evidence produced no generation or citations."
+    },
+    {
+      "case_id": "m63-en-safe-provider-error",
+      "language": "en",
+      "category": "error_sanitization",
+      "passed": true,
+      "detail": "Provider internals are mapped to a stable application error."
+    }
+  ],
+  "failures": [],
+  "limitations": [
+    "This deterministic suite validates application boundaries; it does not predict how every external model will react to adversarial text.",
+    "Workspace/document scope uses the production service and repository with SQLite test storage; M6.1 supplies the separate pgvector smoke path.",
+    "No live provider, model, or secret was used."
+  ]
+}
