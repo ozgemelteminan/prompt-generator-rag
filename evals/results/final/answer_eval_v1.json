@@ -1,0 +1,345 @@
+{
+  "experimentVersion": "m6.2",
+  "datasetVersion": "answer-eval-v1",
+  "status": "fixture_only",
+  "execution": {
+    "mode": "fixture",
+    "orchestration": "production GroundedRagService + ContextBuilder",
+    "retrieval": "reviewed deterministic fixture",
+    "generation": "reviewed deterministic fixture"
+  },
+  "metrics": {
+    "overall": {
+      "case_count": 12,
+      "answer_correctness": 1.0,
+      "citation_validity": 1.0,
+      "citation_correctness": 1.0,
+      "citation_completeness": 1.0,
+      "faithfulness": 1.0,
+      "insufficient_evidence_success": 1.0
+    },
+    "byLanguage": {
+      "tr": {
+        "case_count": 6,
+        "answer_correctness": 1.0,
+        "citation_validity": 1.0,
+        "citation_correctness": 1.0,
+        "citation_completeness": 1.0,
+        "faithfulness": 1.0,
+        "insufficient_evidence_success": 1.0
+      },
+      "en": {
+        "case_count": 6,
+        "answer_correctness": 1.0,
+        "citation_validity": 1.0,
+        "citation_correctness": 1.0,
+        "citation_completeness": 1.0,
+        "faithfulness": 1.0,
+        "insufficient_evidence_success": 1.0
+      }
+    },
+    "byCategory": {
+      "architecture": {
+        "case_count": 1,
+        "answer_correctness": 1.0,
+        "citation_validity": 1.0,
+        "citation_correctness": 1.0,
+        "citation_completeness": 1.0,
+        "faithfulness": 1.0,
+        "insufficient_evidence_success": 0.0
+      },
+      "cross_paragraph": {
+        "case_count": 1,
+        "answer_correctness": 1.0,
+        "citation_validity": 1.0,
+        "citation_correctness": 1.0,
+        "citation_completeness": 1.0,
+        "faithfulness": 1.0,
+        "insufficient_evidence_success": 0.0
+      },
+      "factual": {
+        "case_count": 2,
+        "answer_correctness": 1.0,
+        "citation_validity": 1.0,
+        "citation_correctness": 1.0,
+        "citation_completeness": 1.0,
+        "faithfulness": 1.0,
+        "insufficient_evidence_success": 0.0
+      },
+      "insufficient_evidence": {
+        "case_count": 4,
+        "answer_correctness": 0.0,
+        "citation_validity": 1.0,
+        "citation_correctness": 0.0,
+        "citation_completeness": 0.0,
+        "faithfulness": 0.0,
+        "insufficient_evidence_success": 1.0
+      },
+      "provenance": {
+        "case_count": 1,
+        "answer_correctness": 1.0,
+        "citation_validity": 1.0,
+        "citation_correctness": 1.0,
+        "citation_completeness": 1.0,
+        "faithfulness": 1.0,
+        "insufficient_evidence_success": 0.0
+      },
+      "safety": {
+        "case_count": 2,
+        "answer_correctness": 1.0,
+        "citation_validity": 1.0,
+        "citation_correctness": 1.0,
+        "citation_completeness": 1.0,
+        "faithfulness": 1.0,
+        "insufficient_evidence_success": 0.0
+      },
+      "terminology": {
+        "case_count": 1,
+        "answer_correctness": 1.0,
+        "citation_validity": 1.0,
+        "citation_correctness": 1.0,
+        "citation_completeness": 1.0,
+        "faithfulness": 1.0,
+        "insufficient_evidence_success": 0.0
+      }
+    },
+    "byAnswerability": {
+      "answerable": {
+        "case_count": 8,
+        "answer_correctness": 1.0,
+        "citation_validity": 1.0,
+        "citation_correctness": 1.0,
+        "citation_completeness": 1.0,
+        "faithfulness": 1.0,
+        "insufficient_evidence_success": 0.0
+      },
+      "unanswerable": {
+        "case_count": 4,
+        "answer_correctness": 0.0,
+        "citation_validity": 1.0,
+        "citation_correctness": 0.0,
+        "citation_completeness": 0.0,
+        "faithfulness": 0.0,
+        "insufficient_evidence_success": 1.0
+      }
+    }
+  },
+  "outcomes": [
+    {
+      "case_id": "m62-tr-rrf-rank",
+      "language": "tr",
+      "category": "factual",
+      "answerable": true,
+      "state": "answer",
+      "answer": "RRF, yoğun ve seyrek arama listelerini ham skorları toplamak yerine sıra bilgisiyle birleştirir. [1]",
+      "source_citation_ids": [
+        1
+      ],
+      "citation_validity": 1.0,
+      "answer_correctness": 1.0,
+      "citation_correctness": 1.0,
+      "citation_completeness": 1.0,
+      "faithfulness": 1.0,
+      "insufficient_evidence_success": null,
+      "failures": []
+    },
+    {
+      "case_id": "m62-tr-security-boundaries",
+      "language": "tr",
+      "category": "safety",
+      "answerable": true,
+      "state": "answer",
+      "answer": "Yüklenen belgeler güvenilmeyen veridir; içindeki talimatlar uygulama talimatı sayılmaz. [1] Ayrıştırıcı kod bloklarını, makroları ve PDF JavaScript'ini çalıştırmaz. [2]",
+      "source_citation_ids": [
+        1,
+        2
+      ],
+      "citation_validity": 1.0,
+      "answer_correctness": 1.0,
+      "citation_correctness": 1.0,
+      "citation_completeness": 1.0,
+      "faithfulness": 1.0,
+      "insufficient_evidence_success": null,
+      "failures": []
+    },
+    {
+      "case_id": "m62-tr-chunking-boundaries",
+      "language": "tr",
+      "category": "cross_paragraph",
+      "answerable": true,
+      "state": "answer",
+      "answer": "Yapı farkındalıklı parçalama bölümü, başlığı ve paragrafı korur. [1] Örtüşen parçalar bağlam sürekliliğini korur. [2]",
+      "source_citation_ids": [
+        1,
+        2
+      ],
+      "citation_validity": 1.0,
+      "answer_correctness": 1.0,
+      "citation_correctness": 1.0,
+      "citation_completeness": 1.0,
+      "faithfulness": 1.0,
+      "insufficient_evidence_success": null,
+      "failures": []
+    },
+    {
+      "case_id": "m62-tr-retriever-reranker",
+      "language": "tr",
+      "category": "terminology",
+      "answerable": true,
+      "state": "answer",
+      "answer": "Retriever geri çağırmayı artırır; reranker ise seçilen adayların kesinliğini artırır. [1]",
+      "source_citation_ids": [
+        1
+      ],
+      "citation_validity": 1.0,
+      "answer_correctness": 1.0,
+      "citation_correctness": 1.0,
+      "citation_completeness": 1.0,
+      "faithfulness": 1.0,
+      "insufficient_evidence_success": null,
+      "failures": []
+    },
+    {
+      "case_id": "m62-en-retrieval-roles",
+      "language": "en",
+      "category": "factual",
+      "answerable": true,
+      "state": "answer",
+      "answer": "A retriever optimizes recall by returning a broad candidate set, while a reranker optimizes precision within that set. [1]",
+      "source_citation_ids": [
+        1
+      ],
+      "citation_validity": 1.0,
+      "answer_correctness": 1.0,
+      "citation_correctness": 1.0,
+      "citation_completeness": 1.0,
+      "faithfulness": 1.0,
+      "insufficient_evidence_success": null,
+      "failures": []
+    },
+    {
+      "case_id": "m62-en-context-provenance",
+      "language": "en",
+      "category": "provenance",
+      "answerable": true,
+      "state": "answer",
+      "answer": "The context builder deduplicates candidates and preserves citation metadata while reducing overlap. [1]",
+      "source_citation_ids": [
+        1
+      ],
+      "citation_validity": 1.0,
+      "answer_correctness": 1.0,
+      "citation_correctness": 1.0,
+      "citation_completeness": 1.0,
+      "faithfulness": 1.0,
+      "insufficient_evidence_success": null,
+      "failures": []
+    },
+    {
+      "case_id": "m62-en-planning-boundary",
+      "language": "en",
+      "category": "architecture",
+      "answerable": true,
+      "state": "answer",
+      "answer": "Services own use-case orchestration and repositories own persistence. [1]",
+      "source_citation_ids": [
+        1
+      ],
+      "citation_validity": 1.0,
+      "answer_correctness": 1.0,
+      "citation_correctness": 1.0,
+      "citation_completeness": 1.0,
+      "faithfulness": 1.0,
+      "insufficient_evidence_success": null,
+      "failures": []
+    },
+    {
+      "case_id": "m62-en-document-code",
+      "language": "en",
+      "category": "safety",
+      "answerable": true,
+      "state": "answer",
+      "answer": "No. Do not execute code extracted from an uploaded document. [1]",
+      "source_citation_ids": [
+        1
+      ],
+      "citation_validity": 1.0,
+      "answer_correctness": 1.0,
+      "citation_correctness": 1.0,
+      "citation_completeness": 1.0,
+      "faithfulness": 1.0,
+      "insufficient_evidence_success": null,
+      "failures": []
+    },
+    {
+      "case_id": "m62-tr-unanswerable-rrf-k",
+      "language": "tr",
+      "category": "insufficient_evidence",
+      "answerable": false,
+      "state": "insufficient_evidence",
+      "answer": null,
+      "source_citation_ids": [],
+      "citation_validity": 1.0,
+      "answer_correctness": null,
+      "citation_correctness": null,
+      "citation_completeness": null,
+      "faithfulness": null,
+      "insufficient_evidence_success": 1.0,
+      "failures": []
+    },
+    {
+      "case_id": "m62-tr-unanswerable-provider",
+      "language": "tr",
+      "category": "insufficient_evidence",
+      "answerable": false,
+      "state": "insufficient_evidence",
+      "answer": null,
+      "source_citation_ids": [],
+      "citation_validity": 1.0,
+      "answer_correctness": null,
+      "citation_correctness": null,
+      "citation_completeness": null,
+      "faithfulness": null,
+      "insufficient_evidence_success": 1.0,
+      "failures": []
+    },
+    {
+      "case_id": "m62-en-unanswerable-model",
+      "language": "en",
+      "category": "insufficient_evidence",
+      "answerable": false,
+      "state": "insufficient_evidence",
+      "answer": null,
+      "source_citation_ids": [],
+      "citation_validity": 1.0,
+      "answer_correctness": null,
+      "citation_correctness": null,
+      "citation_completeness": null,
+      "faithfulness": null,
+      "insufficient_evidence_success": 1.0,
+      "failures": []
+    },
+    {
+      "case_id": "m62-en-unanswerable-cost",
+      "language": "en",
+      "category": "insufficient_evidence",
+      "answerable": false,
+      "state": "insufficient_evidence",
+      "answer": null,
+      "source_citation_ids": [],
+      "citation_validity": 1.0,
+      "answer_correctness": null,
+      "citation_correctness": null,
+      "citation_completeness": null,
+      "faithfulness": null,
+      "insufficient_evidence_success": 1.0,
+      "failures": []
+    }
+  ],
+  "failureExamples": [],
+  "limitations": [
+    "Fixture results validate the answer evaluation harness; they are not a real-provider answer-quality claim.",
+    "Deterministic scoring covers only explicitly labeled facts and source blocks; it cannot detect every unsupported free-form claim.",
+    "The fixture path uses reviewed source blocks, not a live PostgreSQL retrieval index. M6.1 separately covers production retrieval parity."
+  ]
+}

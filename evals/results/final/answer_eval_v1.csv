@@ -1,0 +1,13 @@
+case_id,language,category,answerable,state,answer_correctness,citation_validity,citation_correctness,citation_completeness,faithfulness,insufficient_evidence_success,failures
+m62-tr-rrf-rank,tr,factual,True,answer,1.0,1.0,1.0,1.0,1.0,,
+m62-tr-security-boundaries,tr,safety,True,answer,1.0,1.0,1.0,1.0,1.0,,
+m62-tr-chunking-boundaries,tr,cross_paragraph,True,answer,1.0,1.0,1.0,1.0,1.0,,
+m62-tr-retriever-reranker,tr,terminology,True,answer,1.0,1.0,1.0,1.0,1.0,,
+m62-en-retrieval-roles,en,factual,True,answer,1.0,1.0,1.0,1.0,1.0,,
+m62-en-context-provenance,en,provenance,True,answer,1.0,1.0,1.0,1.0,1.0,,
+m62-en-planning-boundary,en,architecture,True,answer,1.0,1.0,1.0,1.0,1.0,,
+m62-en-document-code,en,safety,True,answer,1.0,1.0,1.0,1.0,1.0,,
+m62-tr-unanswerable-rrf-k,tr,insufficient_evidence,False,insufficient_evidence,,1.0,,,,1.0,
+m62-tr-unanswerable-provider,tr,insufficient_evidence,False,insufficient_evidence,,1.0,,,,1.0,
+m62-en-unanswerable-model,en,insufficient_evidence,False,insufficient_evidence,,1.0,,,,1.0,
+m62-en-unanswerable-cost,en,insufficient_evidence,False,insufficient_evidence,,1.0,,,,1.0,

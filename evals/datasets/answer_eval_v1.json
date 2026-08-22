@@ -1,0 +1,156 @@
+{
+  "version": "answer-eval-v1",
+  "sourceCorpus": "retrieval_eval_v1.json",
+  "cases": [
+    {
+      "caseId": "m62-tr-rrf-rank",
+      "documentId": "doc-tr-rrf",
+      "language": "tr",
+      "category": "factual",
+      "query": "RRF yoğun ve seyrek sonuçları nasıl birleştirir?",
+      "answerable": true,
+      "fixtureRetrievedBlockIds": ["tr-rrf-1"],
+      "expectedFacts": [{"factId": "rank-fusion", "acceptedAnswers": ["sıra bilgisiyle", "ham skorları toplamak yerine"], "sourceBlockIds": ["tr-rrf-1"]}],
+      "fixtureAnswer": "RRF, yoğun ve seyrek arama listelerini ham skorları toplamak yerine sıra bilgisiyle birleştirir. [1]"
+    },
+    {
+      "caseId": "m62-tr-security-boundaries",
+      "documentId": "doc-tr-guvenlik",
+      "language": "tr",
+      "category": "safety",
+      "query": "Yüklenen belge talimatları ve ayrıştırıcının çalıştırdığı içerik için kurallar nelerdir?",
+      "answerable": true,
+      "fixtureRetrievedBlockIds": ["tr-sec-1", "tr-sec-2"],
+      "expectedFacts": [
+        {"factId": "untrusted-data", "acceptedAnswers": ["güvenilmeyen veridir", "uygulama talimatı sayılmaz"], "sourceBlockIds": ["tr-sec-1"]},
+        {"factId": "no-execution", "acceptedAnswers": ["makroları", "PDF JavaScript'ini", "çalıştırmaz"], "sourceBlockIds": ["tr-sec-2"]}
+      ],
+      "fixtureAnswer": "Yüklenen belgeler güvenilmeyen veridir; içindeki talimatlar uygulama talimatı sayılmaz. [1] Ayrıştırıcı kod bloklarını, makroları ve PDF JavaScript'ini çalıştırmaz. [2]"
+    },
+    {
+      "caseId": "m62-tr-chunking-boundaries",
+      "documentId": "doc-tr-ek",
+      "language": "tr",
+      "category": "cross_paragraph",
+      "query": "Yapı farkındalıklı parçalama ve örtüşme hangi iki korumayı sağlar?",
+      "answerable": true,
+      "fixtureRetrievedBlockIds": ["tr-morph-1", "tr-morph-4"],
+      "expectedFacts": [
+        {"factId": "structure", "acceptedAnswers": ["bölümü, başlığı ve paragrafı korur"], "sourceBlockIds": ["tr-morph-1"]},
+        {"factId": "continuity", "acceptedAnswers": ["bağlam sürekliliğini korur"], "sourceBlockIds": ["tr-morph-4"]}
+      ],
+      "fixtureAnswer": "Yapı farkındalıklı parçalama bölümü, başlığı ve paragrafı korur. [1] Örtüşen parçalar bağlam sürekliliğini korur. [2]"
+    },
+    {
+      "caseId": "m62-tr-retriever-reranker",
+      "documentId": "doc-tr-rrf",
+      "language": "tr",
+      "category": "terminology",
+      "query": "Retriever ve reranker görevleri bakımından nasıl ayrılır?",
+      "answerable": true,
+      "fixtureRetrievedBlockIds": ["tr-rrf-4"],
+      "expectedFacts": [
+        {"factId": "recall", "acceptedAnswers": ["geri çağırmayı artırır"], "sourceBlockIds": ["tr-rrf-4"]},
+        {"factId": "precision", "acceptedAnswers": ["kesinliğini artırır"], "sourceBlockIds": ["tr-rrf-4"]}
+      ],
+      "fixtureAnswer": "Retriever geri çağırmayı artırır; reranker ise seçilen adayların kesinliğini artırır. [1]"
+    },
+    {
+      "caseId": "m62-en-retrieval-roles",
+      "documentId": "doc-en-retrieval",
+      "language": "en",
+      "category": "factual",
+      "query": "What do a retriever and a reranker optimize?",
+      "answerable": true,
+      "fixtureRetrievedBlockIds": ["en-ret-1"],
+      "expectedFacts": [
+        {"factId": "recall", "acceptedAnswers": ["optimizes recall"], "sourceBlockIds": ["en-ret-1"]},
+        {"factId": "precision", "acceptedAnswers": ["optimizes precision"], "sourceBlockIds": ["en-ret-1"]}
+      ],
+      "fixtureAnswer": "A retriever optimizes recall by returning a broad candidate set, while a reranker optimizes precision within that set. [1]"
+    },
+    {
+      "caseId": "m62-en-context-provenance",
+      "documentId": "doc-en-retrieval",
+      "language": "en",
+      "category": "provenance",
+      "query": "What does the context builder preserve while reducing candidates?",
+      "answerable": true,
+      "fixtureRetrievedBlockIds": ["en-ret-4"],
+      "expectedFacts": [
+        {"factId": "deduplicate", "acceptedAnswers": ["deduplicates candidates"], "sourceBlockIds": ["en-ret-4"]},
+        {"factId": "citation-metadata", "acceptedAnswers": ["preserves citation metadata"], "sourceBlockIds": ["en-ret-4"]}
+      ],
+      "fixtureAnswer": "The context builder deduplicates candidates and preserves citation metadata while reducing overlap. [1]"
+    },
+    {
+      "caseId": "m62-en-planning-boundary",
+      "documentId": "doc-en-planning",
+      "language": "en",
+      "category": "architecture",
+      "query": "Which layers own orchestration and persistence?",
+      "answerable": true,
+      "fixtureRetrievedBlockIds": ["en-plan-2"],
+      "expectedFacts": [
+        {"factId": "services", "acceptedAnswers": ["services own use-case orchestration"], "sourceBlockIds": ["en-plan-2"]},
+        {"factId": "repositories", "acceptedAnswers": ["repositories own persistence"], "sourceBlockIds": ["en-plan-2"]}
+      ],
+      "fixtureAnswer": "Services own use-case orchestration and repositories own persistence. [1]"
+    },
+    {
+      "caseId": "m62-en-document-code",
+      "documentId": "doc-en-python",
+      "language": "en",
+      "category": "safety",
+      "query": "May code extracted from an uploaded document be executed?",
+      "answerable": true,
+      "fixtureRetrievedBlockIds": ["en-code-5"],
+      "expectedFacts": [{"factId": "no-execution", "acceptedAnswers": ["Do not execute code extracted from an uploaded document"], "sourceBlockIds": ["en-code-5"]}],
+      "fixtureAnswer": "No. Do not execute code extracted from an uploaded document. [1]"
+    },
+    {
+      "caseId": "m62-tr-unanswerable-rrf-k",
+      "documentId": "doc-tr-rrf",
+      "language": "tr",
+      "category": "insufficient_evidence",
+      "query": "Belge RRF için hangi k sabitini öneriyor?",
+      "answerable": false,
+      "fixtureRetrievedBlockIds": [],
+      "expectedFacts": [],
+      "fixtureAnswer": null
+    },
+    {
+      "caseId": "m62-tr-unanswerable-provider",
+      "documentId": "doc-tr-guvenlik",
+      "language": "tr",
+      "category": "insufficient_evidence",
+      "query": "Belge hangi LLM sağlayıcısını kullanıyor?",
+      "answerable": false,
+      "fixtureRetrievedBlockIds": [],
+      "expectedFacts": [],
+      "fixtureAnswer": null
+    },
+    {
+      "caseId": "m62-en-unanswerable-model",
+      "documentId": "doc-en-retrieval",
+      "language": "en",
+      "category": "insufficient_evidence",
+      "query": "Which embedding model does the document recommend?",
+      "answerable": false,
+      "fixtureRetrievedBlockIds": [],
+      "expectedFacts": [],
+      "fixtureAnswer": null
+    },
+    {
+      "caseId": "m62-en-unanswerable-cost",
+      "documentId": "doc-en-planning",
+      "language": "en",
+      "category": "insufficient_evidence",
+      "query": "What is the monthly operating cost of this system?",
+      "answerable": false,
+      "fixtureRetrievedBlockIds": [],
+      "expectedFacts": [],
+      "fixtureAnswer": null
+    }
+  ]
+}
