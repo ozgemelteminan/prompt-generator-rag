@@ -1,9 +1,8 @@
 # PromptForge
 
 PromptForge is a planned Turkish/English platform for turning a user’s request
-into a well-structured prompt. This repository currently implements **M4.1 —
-Chunking Evaluation Infrastructure**. Production embeddings, retrieval, RAG, and
-authentication are not implemented.
+into a well-structured prompt. This repository currently implements **M4.2 —
+Embedding Benchmark**. Production retrieval, RAG, and authentication are not implemented.
 
 ## Architecture
 
@@ -340,6 +339,34 @@ PYTHONPATH=apps/api:. uv run pytest evals/tests
 
 The committed result files are deliberately marked `requires_real_model_run`; no fake
 hash-embedder numbers are presented as benchmark results.
+
+## Embedding benchmark (M4.2)
+
+M4.2 evaluates four embedding models over a single frozen chunk corpus generated once
+by the production `StructureAwareChunker` with target/max/overlap tokens of 350/500/40.
+Documents, retrieval queries, source-block relevance labels, cosine ranking, and metrics
+are held fixed. The only variable is embedding model: GTE multilingual base, BGE-M3,
+multilingual E5 large instruct, and Turkish E5 large.
+
+The static `retrieval-eval-v1` dataset has 84 balanced Turkish/English queries and adds
+hard paraphrase, near-negative, same-topic competitor, and multi-section categories.
+It retains block-based ground truth. M4.2 adds RequiredBlockCoverage@5/@10: the fraction
+of required source blocks represented by top-k chunks. It records quality breakdowns plus
+embedding dimension, load/encode timing, throughput, truncation rate, and peak CUDA memory.
+
+The evaluation registry uses each model's retrieval formatting protocol:
+
+| Model | Query formatting | Passage formatting | Scope |
+| --- | --- | --- | --- |
+| `Alibaba-NLP/gte-multilingual-base` | Raw query | Raw passage | Bilingual; remote code explicitly enabled |
+| `BAAI/bge-m3` | Raw query | Raw passage | Bilingual |
+| `intfloat/multilingual-e5-large-instruct` | `Instruct: Given a web search query, retrieve relevant passages that answer the query` then `Query: <query>` | Raw passage | Bilingual |
+| `ytu-ce-cosmos/turkish-e5-large` | `Instruct: Given a Turkish search query, retrieve relevant passages written in Turkish that best answer the query` then `Query: <query>` | Raw passage | Turkish-specialized; English results are diagnostic only |
+
+The M4.2 notebook reports Turkish metrics separately. Turkish E5 is not considered a
+general bilingual production winner from its Turkish-language results.
+
+Run [02_embedding_benchmark.ipynb](/Users/ozge/Documents/ChatGPT/prompt-generator-rag/notebooks/02_embedding_benchmark.ipynb) in a fresh Colab runtime after setting its repository URL/ref. It uses the same pinned compatible runtime as M4.1, loads one model at a time, writes results incrementally to `evals/results/embeddings/`, and releases CUDA memory between models. No official model results are committed.
 
 ## Prerequisites
 

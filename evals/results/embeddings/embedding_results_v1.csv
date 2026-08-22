@@ -1,0 +1,1 @@
+model,recall_at_5,recall_at_10,mrr,ndcg_at_10,hit_rate_at_5,required_block_coverage_at_5,required_block_coverage_at_10,embedding_dimension,queries_per_second,passages_per_second

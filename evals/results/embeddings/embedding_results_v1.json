@@ -1,0 +1,12 @@
+{
+  "status": "requires_real_model_run",
+  "experimentVersion": "m4.2",
+  "datasetVersion": "retrieval-eval-v1",
+  "models": [
+    "Alibaba-NLP/gte-multilingual-base",
+    "BAAI/bge-m3",
+    "intfloat/multilingual-e5-large-instruct",
+    "ytu-ce-cosmos/turkish-e5-large"
+  ],
+  "reason": "Official embedding results require the Colab notebook and are intentionally absent."
+}

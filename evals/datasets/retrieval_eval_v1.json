@@ -1,0 +1,895 @@
+{
+  "version": "retrieval-eval-v1",
+  "documents": [
+    {
+      "documentId": "doc-tr-rrf",
+      "language": "tr",
+      "path": "documents/doc-tr-rrf.json"
+    },
+    {
+      "documentId": "doc-tr-guvenlik",
+      "language": "tr",
+      "path": "documents/doc-tr-guvenlik.json"
+    },
+    {
+      "documentId": "doc-tr-ek",
+      "language": "tr",
+      "path": "documents/doc-tr-ek.json"
+    },
+    {
+      "documentId": "doc-en-retrieval",
+      "language": "en",
+      "path": "documents/doc-en-retrieval.json"
+    },
+    {
+      "documentId": "doc-en-python",
+      "language": "en",
+      "path": "documents/doc-en-python.json"
+    },
+    {
+      "documentId": "doc-en-planning",
+      "language": "en",
+      "path": "documents/doc-en-planning.json"
+    }
+  ],
+  "queries": [
+    {
+      "queryId": "m42-rrf-01",
+      "documentId": "doc-tr-rrf",
+      "language": "tr",
+      "query": "RRF nedir?",
+      "relevantBlockIds": [
+        "tr-rrf-1"
+      ],
+      "category": "factual"
+    },
+    {
+      "queryId": "m42-rrf-02",
+      "documentId": "doc-tr-rrf",
+      "language": "tr",
+      "query": "Skor ölçekleri neden karışmaz?",
+      "relevantBlockIds": [
+        "tr-rrf-2"
+      ],
+      "category": "paraphrase"
+    },
+    {
+      "queryId": "m42-rrf-03",
+      "documentId": "doc-tr-rrf",
+      "language": "tr",
+      "query": "Sıra bilgisiyle birleştirme nasıl çalışır?",
+      "relevantBlockIds": [
+        "tr-rrf-1"
+      ],
+      "category": "hard_paraphrase"
+    },
+    {
+      "queryId": "m42-rrf-04",
+      "documentId": "doc-tr-rrf",
+      "language": "tr",
+      "query": "Yoğun ve seyrek arama terimleri neyi anlatır?",
+      "relevantBlockIds": [
+        "tr-rrf-2"
+      ],
+      "category": "terminology_mismatch"
+    },
+    {
+      "queryId": "m42-rrf-05",
+      "documentId": "doc-tr-rrf",
+      "language": "tr",
+      "query": "Birleştirilmiş adaylar nasıl tekilleştirilir?",
+      "relevantBlockIds": [
+        "tr-rrf-4"
+      ],
+      "category": "morphology_heavy"
+    },
+    {
+      "queryId": "m42-rrf-06",
+      "documentId": "doc-tr-rrf",
+      "language": "tr",
+      "query": "Kullanım Notu ne söyler?",
+      "relevantBlockIds": [
+        "tr-rrf-3",
+        "tr-rrf-4"
+      ],
+      "category": "heading_dependent"
+    },
+    {
+      "queryId": "m42-rrf-07",
+      "documentId": "doc-tr-rrf",
+      "language": "tr",
+      "query": "Ham skor ve sıra bilgisi ilişkisi nedir?",
+      "relevantBlockIds": [
+        "tr-rrf-1",
+        "tr-rrf-2"
+      ],
+      "category": "cross_paragraph"
+    },
+    {
+      "queryId": "m42-rrf-08",
+      "documentId": "doc-tr-rrf",
+      "language": "tr",
+      "query": "RRF başka hangi sorunla karıştırılmamalıdır?",
+      "relevantBlockIds": [
+        "tr-rrf-2"
+      ],
+      "category": "near_negative"
+    },
+    {
+      "queryId": "m42-rrf-09",
+      "documentId": "doc-tr-rrf",
+      "language": "tr",
+      "query": "Retriever ile reranker arasındaki fark nedir?",
+      "relevantBlockIds": [
+        "tr-rrf-4"
+      ],
+      "category": "same_topic_competitor"
+    },
+    {
+      "queryId": "m42-rrf-10",
+      "documentId": "doc-tr-rrf",
+      "language": "tr",
+      "query": "RRF ve kaynak metaverisi nasıl birlikte kullanılır?",
+      "relevantBlockIds": [
+        "tr-rrf-1",
+        "tr-rrf-5"
+      ],
+      "category": "multi_section"
+    },
+    {
+      "queryId": "m42-rrf-11",
+      "documentId": "doc-tr-rrf",
+      "language": "tr",
+      "query": "Üst sıralar nasıl ödüllendirilir?",
+      "relevantBlockIds": [
+        "tr-rrf-1"
+      ],
+      "category": "factual"
+    },
+    {
+      "queryId": "m42-rrf-12",
+      "documentId": "doc-tr-rrf",
+      "language": "tr",
+      "query": "Kesinlik hangi aşamada artar?",
+      "relevantBlockIds": [
+        "tr-rrf-5"
+      ],
+      "category": "paraphrase"
+    },
+    {
+      "queryId": "m42-rrf-13",
+      "documentId": "doc-tr-rrf",
+      "language": "tr",
+      "query": "Yinelenen adaylar ne olur?",
+      "relevantBlockIds": [
+        "tr-rrf-4"
+      ],
+      "category": "hard_paraphrase"
+    },
+    {
+      "queryId": "m42-rrf-14",
+      "documentId": "doc-tr-rrf",
+      "language": "tr",
+      "query": "Birleştirme sonrası hangi bilgi korunur?",
+      "relevantBlockIds": [
+        "tr-rrf-5"
+      ],
+      "category": "factual"
+    },
+    {
+      "queryId": "m42-security-01",
+      "documentId": "doc-tr-guvenlik",
+      "language": "tr",
+      "query": "Belge talimatları güvenilir mi?",
+      "relevantBlockIds": [
+        "tr-sec-1"
+      ],
+      "category": "factual"
+    },
+    {
+      "queryId": "m42-security-02",
+      "documentId": "doc-tr-guvenlik",
+      "language": "tr",
+      "query": "Ayrıştırıcı neleri çalıştırmaz?",
+      "relevantBlockIds": [
+        "tr-sec-2"
+      ],
+      "category": "paraphrase"
+    },
+    {
+      "queryId": "m42-security-03",
+      "documentId": "doc-tr-guvenlik",
+      "language": "tr",
+      "query": "Güvenilmeyen veri nasıl ele alınır?",
+      "relevantBlockIds": [
+        "tr-sec-1"
+      ],
+      "category": "hard_paraphrase"
+    },
+    {
+      "queryId": "m42-security-04",
+      "documentId": "doc-tr-guvenlik",
+      "language": "tr",
+      "query": "Sahiplik filtresi ne demektir?",
+      "relevantBlockIds": [
+        "tr-sec-2"
+      ],
+      "category": "terminology_mismatch"
+    },
+    {
+      "queryId": "m42-security-05",
+      "documentId": "doc-tr-guvenlik",
+      "language": "tr",
+      "query": "Çalışma alanı sızıntısı nasıl önlenir?",
+      "relevantBlockIds": [
+        "tr-sec-4"
+      ],
+      "category": "morphology_heavy"
+    },
+    {
+      "queryId": "m42-security-06",
+      "documentId": "doc-tr-guvenlik",
+      "language": "tr",
+      "query": "Sahiplik başlığı ne içerir?",
+      "relevantBlockIds": [
+        "tr-sec-3",
+        "tr-sec-4"
+      ],
+      "category": "heading_dependent"
+    },
+    {
+      "queryId": "m42-security-07",
+      "documentId": "doc-tr-guvenlik",
+      "language": "tr",
+      "query": "Talimat yetkisi ve erişim filtresi nasıl ilişkilidir?",
+      "relevantBlockIds": [
+        "tr-sec-1",
+        "tr-sec-2"
+      ],
+      "category": "cross_paragraph"
+    },
+    {
+      "queryId": "m42-security-08",
+      "documentId": "doc-tr-guvenlik",
+      "language": "tr",
+      "query": "PDF JavaScript ile makro aynı şey midir?",
+      "relevantBlockIds": [
+        "tr-sec-2"
+      ],
+      "category": "near_negative"
+    },
+    {
+      "queryId": "m42-security-09",
+      "documentId": "doc-tr-guvenlik",
+      "language": "tr",
+      "query": "Kullanıcı ve çalışma alanı filtresi farkı nedir?",
+      "relevantBlockIds": [
+        "tr-sec-4"
+      ],
+      "category": "same_topic_competitor"
+    },
+    {
+      "queryId": "m42-security-10",
+      "documentId": "doc-tr-guvenlik",
+      "language": "tr",
+      "query": "Belge güvenliği ile sahiplik birlikte nasıl çalışır?",
+      "relevantBlockIds": [
+        "tr-sec-1",
+        "tr-sec-5"
+      ],
+      "category": "multi_section"
+    },
+    {
+      "queryId": "m42-security-11",
+      "documentId": "doc-tr-guvenlik",
+      "language": "tr",
+      "query": "Dış bağlantılar neden yüklenmez?",
+      "relevantBlockIds": [
+        "tr-sec-1"
+      ],
+      "category": "factual"
+    },
+    {
+      "queryId": "m42-security-12",
+      "documentId": "doc-tr-guvenlik",
+      "language": "tr",
+      "query": "Kritik veri sızıntısı nedir?",
+      "relevantBlockIds": [
+        "tr-sec-5"
+      ],
+      "category": "paraphrase"
+    },
+    {
+      "queryId": "m42-security-13",
+      "documentId": "doc-tr-guvenlik",
+      "language": "tr",
+      "query": "Belge kimliği neden gerekir?",
+      "relevantBlockIds": [
+        "tr-sec-4"
+      ],
+      "category": "hard_paraphrase"
+    },
+    {
+      "queryId": "m42-security-14",
+      "documentId": "doc-tr-guvenlik",
+      "language": "tr",
+      "query": "Başka alan parçaları görünür mü?",
+      "relevantBlockIds": [
+        "tr-sec-5"
+      ],
+      "category": "factual"
+    },
+    {
+      "queryId": "m42-chunk-01",
+      "documentId": "doc-tr-ek",
+      "language": "tr",
+      "query": "Yapı farkındalıklı parçalama nedir?",
+      "relevantBlockIds": [
+        "tr-morph-1"
+      ],
+      "category": "factual"
+    },
+    {
+      "queryId": "m42-chunk-02",
+      "documentId": "doc-tr-ek",
+      "language": "tr",
+      "query": "Uzun paragraf nasıl bölünür?",
+      "relevantBlockIds": [
+        "tr-morph-2"
+      ],
+      "category": "paraphrase"
+    },
+    {
+      "queryId": "m42-chunk-03",
+      "documentId": "doc-tr-ek",
+      "language": "tr",
+      "query": "Belirteç sınırı ne zaman kullanılır?",
+      "relevantBlockIds": [
+        "tr-morph-1"
+      ],
+      "category": "hard_paraphrase"
+    },
+    {
+      "queryId": "m42-chunk-04",
+      "documentId": "doc-tr-ek",
+      "language": "tr",
+      "query": "Anlamsal sınır terimi ne demektir?",
+      "relevantBlockIds": [
+        "tr-morph-2"
+      ],
+      "category": "terminology_mismatch"
+    },
+    {
+      "queryId": "m42-chunk-05",
+      "documentId": "doc-tr-ek",
+      "language": "tr",
+      "query": "Parçalanmış belgelerde hangi aralık saklanır?",
+      "relevantBlockIds": [
+        "tr-morph-4"
+      ],
+      "category": "morphology_heavy"
+    },
+    {
+      "queryId": "m42-chunk-06",
+      "documentId": "doc-tr-ek",
+      "language": "tr",
+      "query": "Örtüşme başlığı ne açıklar?",
+      "relevantBlockIds": [
+        "tr-morph-3",
+        "tr-morph-4"
+      ],
+      "category": "heading_dependent"
+    },
+    {
+      "queryId": "m42-chunk-07",
+      "documentId": "doc-tr-ek",
+      "language": "tr",
+      "query": "Paragraf ve belirteç sırası nedir?",
+      "relevantBlockIds": [
+        "tr-morph-1",
+        "tr-morph-2"
+      ],
+      "category": "cross_paragraph"
+    },
+    {
+      "queryId": "m42-chunk-08",
+      "documentId": "doc-tr-ek",
+      "language": "tr",
+      "query": "Rastgele pencere ile semantik sınır aynı mıdır?",
+      "relevantBlockIds": [
+        "tr-morph-2"
+      ],
+      "category": "near_negative"
+    },
+    {
+      "queryId": "m42-chunk-09",
+      "documentId": "doc-tr-ek",
+      "language": "tr",
+      "query": "Örtüşme bağlamı nasıl korur?",
+      "relevantBlockIds": [
+        "tr-morph-4"
+      ],
+      "category": "same_topic_competitor"
+    },
+    {
+      "queryId": "m42-chunk-10",
+      "documentId": "doc-tr-ek",
+      "language": "tr",
+      "query": "Bölüm sınırı ve denetim bilgisi nasıl birlikte çalışır?",
+      "relevantBlockIds": [
+        "tr-morph-1",
+        "tr-morph-5"
+      ],
+      "category": "multi_section"
+    },
+    {
+      "queryId": "m42-chunk-11",
+      "documentId": "doc-tr-ek",
+      "language": "tr",
+      "query": "Cümle sınırı neden tercih edilir?",
+      "relevantBlockIds": [
+        "tr-morph-1"
+      ],
+      "category": "factual"
+    },
+    {
+      "queryId": "m42-chunk-12",
+      "documentId": "doc-tr-ek",
+      "language": "tr",
+      "query": "İlgisiz bölümler birleşir mi?",
+      "relevantBlockIds": [
+        "tr-morph-5"
+      ],
+      "category": "paraphrase"
+    },
+    {
+      "queryId": "m42-chunk-13",
+      "documentId": "doc-tr-ek",
+      "language": "tr",
+      "query": "Kaynak blok aralığı ne işe yarar?",
+      "relevantBlockIds": [
+        "tr-morph-4"
+      ],
+      "category": "hard_paraphrase"
+    },
+    {
+      "queryId": "m42-chunk-14",
+      "documentId": "doc-tr-ek",
+      "language": "tr",
+      "query": "Örtüşen parçalarda ne korunur?",
+      "relevantBlockIds": [
+        "tr-morph-5"
+      ],
+      "category": "factual"
+    },
+    {
+      "queryId": "m42-retrieval-01",
+      "documentId": "doc-en-retrieval",
+      "language": "en",
+      "query": "What does a retriever optimize?",
+      "relevantBlockIds": [
+        "en-ret-1"
+      ],
+      "category": "factual"
+    },
+    {
+      "queryId": "m42-retrieval-02",
+      "documentId": "doc-en-retrieval",
+      "language": "en",
+      "query": "Why are raw dense and sparse scores incompatible?",
+      "relevantBlockIds": [
+        "en-ret-2"
+      ],
+      "category": "paraphrase"
+    },
+    {
+      "queryId": "m42-retrieval-03",
+      "documentId": "doc-en-retrieval",
+      "language": "en",
+      "query": "How are score scales combined safely?",
+      "relevantBlockIds": [
+        "en-ret-1"
+      ],
+      "category": "hard_paraphrase"
+    },
+    {
+      "queryId": "m42-retrieval-04",
+      "documentId": "doc-en-retrieval",
+      "language": "en",
+      "query": "What does context building mean?",
+      "relevantBlockIds": [
+        "en-ret-2"
+      ],
+      "category": "terminology_mismatch"
+    },
+    {
+      "queryId": "m42-retrieval-05",
+      "documentId": "doc-en-retrieval",
+      "language": "en",
+      "query": "Which metadata survives context selection?",
+      "relevantBlockIds": [
+        "en-ret-4"
+      ],
+      "category": "morphology_heavy"
+    },
+    {
+      "queryId": "m42-retrieval-06",
+      "documentId": "doc-en-retrieval",
+      "language": "en",
+      "query": "What does the Context Building heading cover?",
+      "relevantBlockIds": [
+        "en-ret-3",
+        "en-ret-4"
+      ],
+      "category": "heading_dependent"
+    },
+    {
+      "queryId": "m42-retrieval-07",
+      "documentId": "doc-en-retrieval",
+      "language": "en",
+      "query": "How do recall and citation preservation relate?",
+      "relevantBlockIds": [
+        "en-ret-1",
+        "en-ret-2"
+      ],
+      "category": "cross_paragraph"
+    },
+    {
+      "queryId": "m42-retrieval-08",
+      "documentId": "doc-en-retrieval",
+      "language": "en",
+      "query": "Is a context builder the same as a reranker?",
+      "relevantBlockIds": [
+        "en-ret-2"
+      ],
+      "category": "near_negative"
+    },
+    {
+      "queryId": "m42-retrieval-09",
+      "documentId": "doc-en-retrieval",
+      "language": "en",
+      "query": "What is the difference between retriever and reranker?",
+      "relevantBlockIds": [
+        "en-ret-4"
+      ],
+      "category": "same_topic_competitor"
+    },
+    {
+      "queryId": "m42-retrieval-10",
+      "documentId": "doc-en-retrieval",
+      "language": "en",
+      "query": "How should weak evidence be handled across sections?",
+      "relevantBlockIds": [
+        "en-ret-1",
+        "en-ret-5"
+      ],
+      "category": "multi_section"
+    },
+    {
+      "queryId": "m42-retrieval-11",
+      "documentId": "doc-en-retrieval",
+      "language": "en",
+      "query": "Why reduce overlap?",
+      "relevantBlockIds": [
+        "en-ret-1"
+      ],
+      "category": "factual"
+    },
+    {
+      "queryId": "m42-retrieval-12",
+      "documentId": "doc-en-retrieval",
+      "language": "en",
+      "query": "What does insufficient evidence require?",
+      "relevantBlockIds": [
+        "en-ret-5"
+      ],
+      "category": "paraphrase"
+    },
+    {
+      "queryId": "m42-retrieval-13",
+      "documentId": "doc-en-retrieval",
+      "language": "en",
+      "query": "Which stage deduplicates candidates?",
+      "relevantBlockIds": [
+        "en-ret-4"
+      ],
+      "category": "hard_paraphrase"
+    },
+    {
+      "queryId": "m42-retrieval-14",
+      "documentId": "doc-en-retrieval",
+      "language": "en",
+      "query": "What avoids invented document claims?",
+      "relevantBlockIds": [
+        "en-ret-5"
+      ],
+      "category": "factual"
+    },
+    {
+      "queryId": "m42-code-01",
+      "documentId": "doc-en-python",
+      "language": "en",
+      "query": "When is deterministic processing preferred?",
+      "relevantBlockIds": [
+        "en-code-1"
+      ],
+      "category": "factual"
+    },
+    {
+      "queryId": "m42-code-02",
+      "documentId": "doc-en-python",
+      "language": "en",
+      "query": "What does normalize change?",
+      "relevantBlockIds": [
+        "en-code-2"
+      ],
+      "category": "paraphrase"
+    },
+    {
+      "queryId": "m42-code-03",
+      "documentId": "doc-en-python",
+      "language": "en",
+      "query": "How are line endings normalized?",
+      "relevantBlockIds": [
+        "en-code-1"
+      ],
+      "category": "hard_paraphrase"
+    },
+    {
+      "queryId": "m42-code-04",
+      "documentId": "doc-en-python",
+      "language": "en",
+      "query": "What does the Tests heading require?",
+      "relevantBlockIds": [
+        "en-code-2"
+      ],
+      "category": "terminology_mismatch"
+    },
+    {
+      "queryId": "m42-code-05",
+      "documentId": "doc-en-python",
+      "language": "en",
+      "query": "Which code must remain unexecuted?",
+      "relevantBlockIds": [
+        "en-code-4"
+      ],
+      "category": "morphology_heavy"
+    },
+    {
+      "queryId": "m42-code-06",
+      "documentId": "doc-en-python",
+      "language": "en",
+      "query": "What belongs in the Tests section?",
+      "relevantBlockIds": [
+        "en-code-3",
+        "en-code-4"
+      ],
+      "category": "heading_dependent"
+    },
+    {
+      "queryId": "m42-code-07",
+      "documentId": "doc-en-python",
+      "language": "en",
+      "query": "How do stable output and source order relate?",
+      "relevantBlockIds": [
+        "en-code-1",
+        "en-code-2"
+      ],
+      "category": "cross_paragraph"
+    },
+    {
+      "queryId": "m42-code-08",
+      "documentId": "doc-en-python",
+      "language": "en",
+      "query": "Is uploaded code executed for parsing?",
+      "relevantBlockIds": [
+        "en-code-2"
+      ],
+      "category": "near_negative"
+    },
+    {
+      "queryId": "m42-code-09",
+      "documentId": "doc-en-python",
+      "language": "en",
+      "query": "What is source-order preservation?",
+      "relevantBlockIds": [
+        "en-code-4"
+      ],
+      "category": "same_topic_competitor"
+    },
+    {
+      "queryId": "m42-code-10",
+      "documentId": "doc-en-python",
+      "language": "en",
+      "query": "How do tests and code safety work together?",
+      "relevantBlockIds": [
+        "en-code-1",
+        "en-code-5"
+      ],
+      "category": "multi_section"
+    },
+    {
+      "queryId": "m42-code-11",
+      "documentId": "doc-en-python",
+      "language": "en",
+      "query": "What does deterministic mean here?",
+      "relevantBlockIds": [
+        "en-code-1"
+      ],
+      "category": "factual"
+    },
+    {
+      "queryId": "m42-code-12",
+      "documentId": "doc-en-python",
+      "language": "en",
+      "query": "Which invalid inputs need coverage?",
+      "relevantBlockIds": [
+        "en-code-5"
+      ],
+      "category": "paraphrase"
+    },
+    {
+      "queryId": "m42-code-13",
+      "documentId": "doc-en-python",
+      "language": "en",
+      "query": "Can document code run?",
+      "relevantBlockIds": [
+        "en-code-4"
+      ],
+      "category": "hard_paraphrase"
+    },
+    {
+      "queryId": "m42-code-14",
+      "documentId": "doc-en-python",
+      "language": "en",
+      "query": "Why keep tests stable?",
+      "relevantBlockIds": [
+        "en-code-5"
+      ],
+      "category": "factual"
+    },
+    {
+      "queryId": "m42-planning-01",
+      "documentId": "doc-en-planning",
+      "language": "en",
+      "query": "What should be inspected before a change?",
+      "relevantBlockIds": [
+        "en-plan-1"
+      ],
+      "category": "factual"
+    },
+    {
+      "queryId": "m42-planning-02",
+      "documentId": "doc-en-planning",
+      "language": "en",
+      "query": "Which layer owns orchestration?",
+      "relevantBlockIds": [
+        "en-plan-2"
+      ],
+      "category": "paraphrase"
+    },
+    {
+      "queryId": "m42-planning-03",
+      "documentId": "doc-en-planning",
+      "language": "en",
+      "query": "What do route handlers do?",
+      "relevantBlockIds": [
+        "en-plan-1"
+      ],
+      "category": "hard_paraphrase"
+    },
+    {
+      "queryId": "m42-planning-04",
+      "documentId": "doc-en-planning",
+      "language": "en",
+      "query": "What does the Verification heading contain?",
+      "relevantBlockIds": [
+        "en-plan-2"
+      ],
+      "category": "terminology_mismatch"
+    },
+    {
+      "queryId": "m42-planning-05",
+      "documentId": "doc-en-planning",
+      "language": "en",
+      "query": "When should documentation be updated?",
+      "relevantBlockIds": [
+        "en-plan-4"
+      ],
+      "category": "morphology_heavy"
+    },
+    {
+      "queryId": "m42-planning-06",
+      "documentId": "doc-en-planning",
+      "language": "en",
+      "query": "What belongs under Verification?",
+      "relevantBlockIds": [
+        "en-plan-3",
+        "en-plan-4"
+      ],
+      "category": "heading_dependent"
+    },
+    {
+      "queryId": "m42-planning-07",
+      "documentId": "doc-en-planning",
+      "language": "en",
+      "query": "How do focused tests and documentation claims relate?",
+      "relevantBlockIds": [
+        "en-plan-1",
+        "en-plan-2"
+      ],
+      "category": "cross_paragraph"
+    },
+    {
+      "queryId": "m42-planning-08",
+      "documentId": "doc-en-planning",
+      "language": "en",
+      "query": "Are repositories responsible for orchestration?",
+      "relevantBlockIds": [
+        "en-plan-2"
+      ],
+      "category": "near_negative"
+    },
+    {
+      "queryId": "m42-planning-09",
+      "documentId": "doc-en-planning",
+      "language": "en",
+      "query": "How do services differ from routes?",
+      "relevantBlockIds": [
+        "en-plan-4"
+      ],
+      "category": "same_topic_competitor"
+    },
+    {
+      "queryId": "m42-planning-10",
+      "documentId": "doc-en-planning",
+      "language": "en",
+      "query": "How do planning and verification span sections?",
+      "relevantBlockIds": [
+        "en-plan-1",
+        "en-plan-5"
+      ],
+      "category": "multi_section"
+    },
+    {
+      "queryId": "m42-planning-11",
+      "documentId": "doc-en-planning",
+      "language": "en",
+      "query": "What is a smallest coherent change?",
+      "relevantBlockIds": [
+        "en-plan-1"
+      ],
+      "category": "factual"
+    },
+    {
+      "queryId": "m42-planning-12",
+      "documentId": "doc-en-planning",
+      "language": "en",
+      "query": "Which checks follow unit tests?",
+      "relevantBlockIds": [
+        "en-plan-5"
+      ],
+      "category": "paraphrase"
+    },
+    {
+      "queryId": "m42-planning-13",
+      "documentId": "doc-en-planning",
+      "language": "en",
+      "query": "Should unimplemented features be claimed?",
+      "relevantBlockIds": [
+        "en-plan-4"
+      ],
+      "category": "hard_paraphrase"
+    },
+    {
+      "queryId": "m42-planning-14",
+      "documentId": "doc-en-planning",
+      "language": "en",
+      "query": "What does a repository own?",
+      "relevantBlockIds": [
+        "en-plan-5"
+      ],
+      "category": "factual"
+    }
+  ]
+}

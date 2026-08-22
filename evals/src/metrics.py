@@ -37,6 +37,15 @@ def hit_rate_at_k(
     )
 
 
+def required_block_coverage_at_k(
+    retrieved_block_ids: Sequence[frozenset[str]],
+    required_block_ids: frozenset[str],
+    k: int,
+) -> float:
+    """Share of required source blocks represented by the top-k retrieved chunks."""
+    return recall_at_k(retrieved_block_ids, required_block_ids, k)
+
+
 def reciprocal_rank(
     retrieved_block_ids: Sequence[frozenset[str]], relevant_block_ids: frozenset[str]
 ) -> float:
