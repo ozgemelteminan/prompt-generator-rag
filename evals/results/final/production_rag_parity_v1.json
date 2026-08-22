@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "m6.1",
+  "status": "passed",
+  "productionConfiguration": {
+    "chunker": {
+      "implementation": "app.document_processing.chunking.StructureAwareChunker",
+      "targetTokens": 350,
+      "maxTokens": 500,
+      "overlapTokens": 40
+    },
+    "embedding": {
+      "modelId": "intfloat/multilingual-e5-large-instruct",
+      "dimension": 1024,
+      "passageFormat": "raw_text",
+      "queryFormat": "Instruct: Given a web search query, retrieve relevant passages that answer the query\\nQuery: <query>",
+      "normalizeEmbeddings": true
+    },
+    "retrieval": {
+      "database": "PostgreSQL + pgvector",
+      "distance": "cosine (<=>)"
+    }
+  },
+  "checks": [
+    {
+      "name": "production_chunker_config",
+      "passed": true,
+      "detail": "StructureAwareChunker uses target/max/overlap 350/500/40."
+    },
+    {
+      "name": "embedding_model",
+      "passed": true,
+      "detail": "Production embedding provider uses the M4-selected multilingual E5 model."
+    },
+    {
+      "name": "e5_passage_format_and_normalization",
+      "passed": true,
+      "detail": "Passages are raw and normalized to 1024 dimensions."
+    },
+    {
+      "name": "e5_query_format_and_normalization",
+      "passed": true,
+      "detail": "Queries use the selected instructed E5 format and normalized vectors."
+    },
+    {
+      "name": "pgvector_cosine_hnsw_query",
+      "passed": true,
+      "detail": "PostgreSQL retrieval uses pgvector cosine distance with HNSW settings."
+    },
+    {
+      "name": "workspace_filter_before_results",
+      "passed": true,
+      "detail": "Workspace scope is a SQL filter before rows are ranked or returned."
+    },
+    {
+      "name": "production_context_builder",
+      "passed": true,
+      "detail": "Production ContextBuilder creates the cited ContextPackage source."
+    },
+    {
+      "name": "single_pass_grounded_ask",
+      "passed": true,
+      "detail": "A ready ask performs one retrieval and one generation."
+    },
+    {
+      "name": "insufficient_evidence_skips_generation",
+      "passed": true,
+      "detail": "Insufficient evidence produces no generation call."
+    },
+    {
+      "name": "citation_provenance_mapping",
+      "passed": true,
+      "detail": "Citation [1] maps only to the included production ContextPackage source."
+    }
+  ],
+  "postgresPgvectorSmoke": {
+    "status": "not_run",
+    "reason": "Requires an explicitly provisioned PostgreSQL + pgvector database.",
+    "command": "RUN_PGVECTOR_SMOKE=1 PGVECTOR_SMOKE_DATABASE_URL=<postgresql+psycopg URL> PYTHONPATH=apps/api python -m pytest apps/api/tests/test_pgvector_smoke.py -q"
+  },
+  "knownLimitations": [
+    "This is configuration and infrastructure parity validation, not answer-quality scoring.",
+    "The default unit suite uses fake embeddings and generation; it does not download a model or call a provider.",
+    "The PostgreSQL smoke test must run against a separately migrated pgvector database."
+  ]
+}
