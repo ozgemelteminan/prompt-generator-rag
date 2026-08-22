@@ -4,8 +4,56 @@
 
 :root {
   color-scheme: light;
+  --pf-background: #F4F0E6;
+  --pf-surface: #FBF9F3;
+  --pf-sidebar: #ECE6D8;
+  --pf-primary: #6F7454;
+  --pf-primary-hover: #5D6246;
+  --pf-primary-dark: #454A35;
+  --pf-text: #272A22;
+  --pf-secondary: #747568;
+  --pf-border: #D8D1C1;
+  --pf-success: #60785A;
+  --pf-warning: #B17A3A;
+  --pf-error: #B5574D;
 }
 
+* { border-color: var(--pf-border); }
+
 body {
-  @apply min-h-screen bg-[#F4F0E6] text-[#272A22] antialiased;
+  min-height: 100vh;
+  background: var(--pf-background);
+  color: var(--pf-text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer components {
+  .pf-card { border: 1px solid var(--pf-border); border-radius: 12px; background: var(--pf-surface); }
+  .pf-card-muted { border: 1px solid var(--pf-border); border-radius: 12px; background: var(--pf-sidebar); }
+  .pf-page-title { font-size: clamp(1.875rem, 4vw, 2.25rem); font-weight: 600; letter-spacing: -0.035em; color: var(--pf-text); }
+  .pf-eyebrow { font-size: .75rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--pf-primary); }
+  .pf-muted { color: var(--pf-secondary); }
+  .pf-button-primary, .pf-button-secondary, .pf-button-ghost, .pf-button-danger {
+    display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; padding: .625rem 1rem;
+    font-size: .875rem; font-weight: 600; transition: background-color .15s, border-color .15s, color .15s;
+  }
+  .pf-button-primary { background: var(--pf-primary); color: var(--pf-surface); }
+  .pf-button-primary:hover { background: var(--pf-primary-hover); }
+  .pf-button-secondary { border: 1px solid var(--pf-border); background: var(--pf-surface); color: var(--pf-primary-dark); }
+  .pf-button-secondary:hover, .pf-button-ghost:hover { background: var(--pf-sidebar); }
+  .pf-button-ghost { color: var(--pf-primary-dark); }
+  .pf-button-danger { border: 1px solid color-mix(in srgb, var(--pf-error) 40%, transparent); color: var(--pf-error); }
+  .pf-button-danger:hover { background: color-mix(in srgb, var(--pf-error) 8%, transparent); }
+  .pf-button-primary:disabled, .pf-button-secondary:disabled, .pf-button-ghost:disabled, .pf-button-danger:disabled { cursor: not-allowed; opacity: .55; }
+  .pf-input { width: 100%; border: 1px solid var(--pf-border); border-radius: 10px; background: var(--pf-surface); padding: .75rem 1rem; color: var(--pf-text); }
+  .pf-input::placeholder { color: var(--pf-secondary); }
+  .pf-input:focus, .pf-button-primary:focus-visible, .pf-button-secondary:focus-visible, .pf-button-ghost:focus-visible, .pf-button-danger:focus-visible, .pf-link:focus-visible { outline: 2px solid var(--pf-primary); outline-offset: 2px; }
+  .pf-badge { display: inline-flex; align-items: center; gap: .375rem; border-radius: 999px; padding: .25rem .625rem; font-size: .75rem; font-weight: 600; }
+  .pf-badge-ready { background: #e7eee2; color: #40513b; }
+  .pf-badge-warning { background: #f4ead8; color: #8a5c20; }
+  .pf-badge-error { background: #f5e3e1; color: #933e38; }
+  .pf-alert { border: 1px solid; border-radius: 12px; padding: 1rem; font-size: .875rem; line-height: 1.5rem; }
+  .pf-alert-error { border-color: color-mix(in srgb, var(--pf-error) 40%, transparent); background: #f9e9e7; color: var(--pf-text); }
+  .pf-alert-warning { border-color: color-mix(in srgb, var(--pf-warning) 45%, transparent); background: #f6eedf; color: var(--pf-text); }
+  .pf-alert-success { border-color: color-mix(in srgb, var(--pf-success) 45%, transparent); background: #e9f0e5; color: var(--pf-text); }
 }

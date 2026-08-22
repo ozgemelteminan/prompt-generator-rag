@@ -23,14 +23,14 @@ export function UsageStatus() {
 
   if (!usage && !error) return null;
   return (
-    <aside className="mb-6 flex flex-wrap items-center justify-end gap-3 text-xs text-slate-400" aria-label="Usage status">
+    <aside className="space-y-2 border-t border-[#D8D1C1] pt-4 text-xs text-[#747568]" aria-label="Usage status">
       {usage && <>
-        <span>{language === "tr" ? "Oluşturma" : "Generations"}: {usage.generation.used}/{usage.generation.limit}</span>
-        <span>{language === "tr" ? "Çalıştırma" : "Executions"}: {usage.execution.used}/{usage.execution.limit}</span>
-        <span>{language === "tr" ? "Yenilenme" : "Reset"}: {new Date(usage.generation.resetAt).toLocaleDateString(language === "tr" ? "tr-TR" : "en-US")}</span>
+        <p>{language === "tr" ? "Oluşturma" : "Generations"}: {usage.generation.used}/{usage.generation.limit}</p>
+        <p>{language === "tr" ? "Çalıştırma" : "Executions"}: {usage.execution.used}/{usage.execution.limit}</p>
+        <p>{language === "tr" ? "Yenilenme" : "Reset"}: {new Date(usage.generation.resetAt).toLocaleDateString(language === "tr" ? "tr-TR" : "en-US")}</p>
       </>}
       {error && <span role="status">{localizedError(language, error.code, error.details)}</span>}
-      <button className="text-cyan-200 hover:text-white" onClick={() => setLanguage((current) => current === "en" ? "tr" : "en")} type="button">{language === "en" ? "TR" : "EN"}</button>
+      <button className="pf-button-ghost !px-0 !py-1 text-xs" onClick={() => setLanguage((current) => current === "en" ? "tr" : "en")} type="button">{language === "en" ? "TR" : "EN"}</button>
     </aside>
   );
 }

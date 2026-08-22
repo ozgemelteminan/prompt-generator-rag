@@ -2,50 +2,19 @@
 
 import { useEffect, useState } from "react";
 
-import {
-  getPromptHistory,
-  listPromptHistory,
-  type PromptHistoryDetail,
-  type PromptHistoryItem,
-  PromptApiError,
-  setPromptFavorite,
-} from "@/lib/api";
+import { getPromptHistory, listPromptHistory, type PromptHistoryDetail, type PromptHistoryItem, PromptApiError, setPromptFavorite } from "@/lib/api";
 import { localizedError } from "@/lib/errors";
 
 export function HistoryExperience() {
-  const [items, setItems] = useState<PromptHistoryItem[]>([]);
-  const [detail, setDetail] = useState<PromptHistoryDetail | null>(null);
-  const [favoritesOnly, setFavoritesOnly] = useState(false);
-  const [language, setLanguage] = useState<"en" | "tr">("en");
-  const [error, setError] = useState<PromptApiError | null>(null);
-
-  useEffect(() => {
-    void listPromptHistory(favoritesOnly).then((result) => setItems(result.items)).catch((reason: unknown) => setError(reason instanceof PromptApiError ? reason : new PromptApiError(null, "History failed.")));
-  }, [favoritesOnly]);
-
-  async function openItem(id: string) {
-    try { setDetail(await getPromptHistory(id)); } catch (reason) { setError(reason instanceof PromptApiError ? reason : new PromptApiError(null, "History failed.")); }
-  }
-
-  async function toggleFavorite(item: PromptHistoryItem) {
-    try {
-      const updated = await setPromptFavorite(item.id, !item.isFavorite);
-      setItems((current) => current.map((entry) => entry.id === item.id ? updated : entry));
-      if (detail?.id === item.id) setDetail({ ...detail, isFavorite: updated.isFavorite });
-    } catch (reason) {
-      setError(reason instanceof PromptApiError ? reason : new PromptApiError(null, "Favorite failed."));
-    }
-  }
-
-  const copyPrompt = language === "tr" ? "Promptu kopyala" : "Copy prompt";
-  const copyResult = language === "tr" ? "Yanıtı kopyala" : "Copy result";
-  return <section className="space-y-6">
-    <header><p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">PromptForge</p><h1 className="mt-3 text-4xl font-semibold text-white">{language === "tr" ? "Geçmiş" : "History"}</h1></header>
-    <div className="flex flex-wrap gap-4"><label className="flex items-center gap-2 text-sm text-slate-200"><input checked={favoritesOnly} onChange={(event) => setFavoritesOnly(event.target.checked)} type="checkbox" /> {language === "tr" ? "Yalnızca favoriler" : "Favorites only"}</label><button className="text-sm text-cyan-200" onClick={() => setLanguage((current) => current === "en" ? "tr" : "en")} type="button">{language === "en" ? "Türkçe" : "English"}</button></div>
-    {error && <p className="rounded-xl bg-rose-400/10 p-4 text-rose-100" role="alert">{localizedError(language, error.code, error.details)}</p>}
-    <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
-      <div className="space-y-3">{items.map((item) => <article className="rounded-xl border border-slate-700 bg-slate-900/70 p-4" key={item.id}><div className="flex justify-between gap-2"><button className="text-left font-medium text-white" onClick={() => void openItem(item.id)} type="button">{item.originalInput}</button><button aria-pressed={item.isFavorite} className="text-cyan-200" onClick={() => void toggleFavorite(item)} type="button">{item.isFavorite ? "★" : "☆"}</button></div><p className="mt-2 text-xs text-slate-400">{new Date(item.createdAt).toLocaleString()} · {item.language.toUpperCase()}</p><p className="mt-3 line-clamp-3 whitespace-pre-wrap text-sm text-slate-300">{item.compiledPromptPreview}</p>{item.latestExecutionPreview && <p className="mt-2 line-clamp-2 text-sm text-emerald-200">{item.latestExecutionPreview}</p>}</article>)}</div>
-      {detail && <article className="space-y-4 rounded-xl border border-cyan-300/40 bg-slate-900/70 p-5"><h2 className="text-xl font-semibold text-white">{language === "tr" ? "Kaydedilen prompt" : "Saved prompt"}</h2><p className="text-slate-300">{detail.originalInput}</p><pre className="whitespace-pre-wrap rounded-lg bg-slate-950 p-3 text-sm text-slate-100">{detail.compiledPrompt}</pre><button className="rounded-lg border border-cyan-200 px-3 py-2 text-cyan-100" onClick={() => void navigator.clipboard.writeText(detail.compiledPrompt)} type="button">{copyPrompt}</button>{detail.executions.map((execution) => <section className="space-y-2" key={execution.id}><p className="font-medium text-emerald-100">{language === "tr" ? "Yanıt" : "Result"}</p><p className="whitespace-pre-wrap text-slate-200">{execution.output}</p><button className="rounded-lg border border-emerald-200/50 px-3 py-2 text-emerald-100" onClick={() => void navigator.clipboard.writeText(execution.output)} type="button">{copyResult}</button></section>)}</article>}
-    </div>
-  </section>;
+  const [items, setItems] = useState<PromptHistoryItem[]>([]); const [detail, setDetail] = useState<PromptHistoryDetail | null>(null); const [favoritesOnly, setFavoritesOnly] = useState(false); const [language, setLanguage] = useState<"en" | "tr">("en"); const [error, setError] = useState<PromptApiError | null>(null);
+  useEffect(() => { void listPromptHistory(favoritesOnly).then((result) => setItems(result.items)).catch((reason: unknown) => setError(reason instanceof PromptApiError ? reason : new PromptApiError(null, "History failed."))); }, [favoritesOnly]);
+  async function openItem(id: string) { try { setDetail(await getPromptHistory(id)); } catch (reason) { setError(reason instanceof PromptApiError ? reason : new PromptApiError(null, "History failed.")); } }
+  async function toggleFavorite(item: PromptHistoryItem) { try { const updated = await setPromptFavorite(item.id, !item.isFavorite); setItems((current) => current.map((entry) => entry.id === item.id ? updated : entry)); if (detail?.id === item.id) setDetail({ ...detail, isFavorite: updated.isFavorite }); } catch (reason) { setError(reason instanceof PromptApiError ? reason : new PromptApiError(null, "Favorite failed.")); } }
+  const tr = language === "tr";
+  return <section className="space-y-7"><header className="space-y-3"><p className="pf-eyebrow">PromptForge</p><h1 className="pf-page-title">{tr ? "Geçmiş" : "History"}</h1><p className="pf-muted">{tr ? "Oluşturduğunuz promptları ve sonuçları yeniden açın." : "Revisit your saved prompts and their results."}</p></header>
+    <div className="flex flex-wrap items-center justify-between gap-3"><label className="flex items-center gap-2 text-sm font-medium"><input checked={favoritesOnly} className="h-4 w-4 accent-[#6F7454]" onChange={(event) => setFavoritesOnly(event.target.checked)} type="checkbox" />{tr ? "Yalnızca favoriler" : "Favorites only"}</label><button className="pf-button-secondary" onClick={() => setLanguage((current) => current === "en" ? "tr" : "en")} type="button">{tr ? "English" : "Türkçe"}</button></div>
+    {error && <p className="pf-alert pf-alert-error" role="alert">{localizedError(language, error.code, error.details)}</p>}
+    <div className="grid gap-5 lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)]"><div className="space-y-3">{items.length === 0 ? <div className="pf-card-muted p-8 text-center pf-muted">{tr ? "Henüz kaydedilmiş prompt yok." : "No saved prompts yet."}</div> : items.map((item) => <article className="pf-card p-4" key={item.id}><div className="flex gap-3"><button className="pf-link min-w-0 flex-1 text-left" onClick={() => void openItem(item.id)} type="button"><h2 className="line-clamp-2 font-semibold">{item.originalInput}</h2><p className="mt-2 text-xs pf-muted">{new Date(item.createdAt).toLocaleString(language === "tr" ? "tr-TR" : "en-US")} · {item.language.toUpperCase()}</p><p className="mt-3 line-clamp-2 whitespace-pre-wrap text-sm leading-6 pf-muted">{item.compiledPromptPreview}</p></button><button aria-label={item.isFavorite ? "Remove favorite" : "Add favorite"} aria-pressed={item.isFavorite} className="pf-button-ghost self-start !px-2 !py-1 text-lg" onClick={() => void toggleFavorite(item)} type="button">{item.isFavorite ? "★" : "☆"}</button></div></article>)}</div>
+      <aside className="pf-card min-h-56 p-5 sm:p-6">{detail ? <div className="space-y-5"><div><p className="pf-eyebrow">{tr ? "Kaydedilen prompt" : "Saved prompt"}</p><h2 className="mt-2 text-xl font-semibold">{detail.originalInput}</h2></div><div className="rounded-lg border border-[#D8D1C1] bg-[#F4F0E6] p-4 text-sm leading-6 whitespace-pre-wrap">{detail.compiledPrompt}</div><button className="pf-button-secondary" onClick={() => void navigator.clipboard.writeText(detail.compiledPrompt)} type="button">{tr ? "Promptu kopyala" : "Copy prompt"}</button>{detail.executions.map((execution) => <section className="border-t pt-5" key={execution.id}><h3 className="font-semibold">{tr ? "Yanıt" : "Result"}</h3><p className="mt-2 whitespace-pre-wrap text-sm leading-6 pf-muted">{execution.output}</p><button className="pf-button-secondary mt-3" onClick={() => void navigator.clipboard.writeText(execution.output)} type="button">{tr ? "Yanıtı kopyala" : "Copy result"}</button></section>)}</div> : <p className="flex h-full items-center justify-center text-center pf-muted">{tr ? "Ayrıntıları görmek için bir prompt seçin." : "Select a prompt to view its details."}</p>}</aside>
+    </div></section>;
 }

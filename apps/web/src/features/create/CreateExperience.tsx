@@ -207,20 +207,21 @@ export function CreateExperience() {
   }
 
   return (
-    <section className="mx-auto flex min-h-[78vh] max-w-4xl flex-col justify-center gap-10 py-8">
+    <section className="mx-auto flex min-h-[78vh] max-w-5xl flex-col justify-center gap-9">
       <header className="max-w-2xl space-y-4">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">{text.eyebrow}</p>
-        <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">{text.title}</h1>
-        <p className="text-lg leading-8 text-slate-300">{text.description}</p>
+        <p className="pf-eyebrow">{text.eyebrow}</p>
+        <h1 className="pf-page-title sm:text-5xl">{text.title}</h1>
+        <p className="text-lg leading-8 pf-muted">{text.description}</p>
       </header>
 
-      <form className="space-y-8 rounded-2xl border border-slate-700 bg-slate-900/70 p-5 shadow-2xl shadow-slate-950/30 sm:p-8" onSubmit={handleGenerate}>
+      <form className="pf-card space-y-8 p-5 sm:p-8" onSubmit={handleGenerate}>
         <fieldset className="space-y-3">
-          <legend className="text-sm font-medium text-slate-200">{text.language}</legend>
+          <legend className="text-sm font-semibold">{text.language}</legend>
           <div className="flex gap-3">
             {(["tr", "en"] as const).map((option) => (
               <button
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-cyan-300 ${language === option ? "bg-cyan-300 text-slate-950" : "bg-slate-800 text-slate-200 hover:bg-slate-700"}`}
+                aria-pressed={language === option}
+                className={`rounded-lg px-4 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#6F7454] ${language === option ? "bg-[#6F7454] text-[#FBF9F3]" : "border border-[#D8D1C1] bg-[#FBF9F3] text-[#454A35] hover:bg-[#ECE6D8]"}`}
                 key={option}
                 onClick={() => setLanguage(option)}
                 type="button"
@@ -232,27 +233,27 @@ export function CreateExperience() {
         </fieldset>
 
         <fieldset className="space-y-3">
-          <legend className="text-sm font-medium text-slate-200">{text.presets} <span className="font-normal text-slate-400">{text.optional}</span></legend>
+          <legend className="text-sm font-semibold">{text.presets} <span className="font-normal pf-muted">{text.optional}</span></legend>
           <div className="grid gap-2 sm:grid-cols-2">
             {taskPresets.map((preset) => (
               <button
                 aria-pressed={presetId === preset.id}
-                className={`rounded-xl border p-3 text-left transition focus:outline-none focus:ring-2 focus:ring-cyan-300 ${presetId === preset.id ? "border-cyan-300 bg-cyan-300/10" : "border-slate-700 bg-slate-800/60 hover:border-slate-500"}`}
+                className={`rounded-xl border p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-[#6F7454] ${presetId === preset.id ? "border-[#6F7454] bg-[#ECE6D8]" : "border-[#D8D1C1] bg-[#FBF9F3] hover:bg-[#F4F0E6]"}`}
                 key={preset.id}
                 onClick={() => setPresetId((current) => current === preset.id ? undefined : preset.id)}
                 type="button"
               >
-                <span className="block text-sm font-medium text-white">{preset.title[language]}</span>
-                <span className="mt-1 block text-sm text-slate-400">{preset.description[language]}</span>
+                <span className="block text-sm font-semibold">{preset.title[language]}</span>
+                <span className="mt-1 block text-sm pf-muted">{preset.description[language]}</span>
               </button>
             ))}
           </div>
         </fieldset>
 
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-slate-200" htmlFor="prompt-request">{text.requestLabel}</label>
+          <label className="block text-sm font-semibold" htmlFor="prompt-request">{text.requestLabel}</label>
           <textarea
-            className="min-h-40 w-full rounded-xl border border-slate-700 bg-slate-950/70 p-4 text-base leading-7 text-white placeholder:text-slate-500 focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+            className="pf-input min-h-40 resize-y leading-7"
             disabled={isLoading}
             id="prompt-request"
             onChange={(event) => setRequest(event.target.value)}
@@ -261,55 +262,55 @@ export function CreateExperience() {
           />
         </div>
 
-        <button className="w-full rounded-xl bg-cyan-300 px-5 py-3 font-semibold text-slate-950 transition hover:bg-cyan-200 focus:outline-none focus:ring-2 focus:ring-cyan-100 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-60" disabled={isLoading} type="submit">
+        <button className="pf-button-primary w-full py-3" disabled={isLoading} type="submit">
           {isLoading ? text.generating : text.generate}
         </button>
       </form>
 
-      {errorCode && <p className="rounded-xl border border-rose-400/40 bg-rose-400/10 p-4 text-sm leading-6 text-rose-100" role="alert">{localizedError(language, errorCode, errorDetails)} {text.tryAgain}</p>}
+      {errorCode && <p className="pf-alert pf-alert-error" role="alert">{localizedError(language, errorCode, errorDetails)} {text.tryAgain}</p>}
 
       {result?.state === "clarification_required" && (
-        <section className="space-y-5 rounded-2xl border border-amber-300/40 bg-amber-300/10 p-5 sm:p-8">
+        <section className="pf-alert pf-alert-warning space-y-5 p-5 sm:p-8">
           <div>
-            <h2 className="text-xl font-semibold text-amber-50">{text.detailsTitle}</h2>
-            <p className="mt-2 text-sm leading-6 text-amber-100/80">{text.detailsDescription}</p>
+            <h2 className="text-xl font-semibold">{text.detailsTitle}</h2>
+            <p className="mt-2 text-sm leading-6 pf-muted">{text.detailsDescription}</p>
           </div>
-          {clarificationAttempted ? <p className="text-sm text-amber-100">{text.clarificationLimit}</p> : (
+          {clarificationAttempted ? <p className="text-sm">{text.clarificationLimit}</p> : (
             <form className="space-y-5" onSubmit={handleClarification}>
               {result.clarificationPlan.questions.map((item, index) => (
-                <label className="block space-y-2 text-sm font-medium text-amber-50" key={`${item.question}-${index}`}>
+                <label className="block space-y-2 text-sm font-semibold" key={`${item.question}-${index}`}>
                   <span>{item.question}</span>
-                  <input className="w-full rounded-lg border border-amber-200/30 bg-slate-950/60 px-3 py-2 text-white focus:border-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-200" disabled={isLoading} onChange={(event) => setAnswers((current) => current.map((answer, answerIndex) => answerIndex === index ? event.target.value : answer))} value={answers[index] ?? ""} />
+                  <input className="pf-input" disabled={isLoading} onChange={(event) => setAnswers((current) => current.map((answer, answerIndex) => answerIndex === index ? event.target.value : answer))} value={answers[index] ?? ""} />
                 </label>
               ))}
-              <button className="rounded-xl bg-amber-200 px-5 py-3 font-semibold text-slate-950 focus:outline-none focus:ring-2 focus:ring-amber-50 disabled:cursor-not-allowed disabled:opacity-60" disabled={isLoading} type="submit">{isLoading ? text.generating : text.continue}</button>
+              <button className="pf-button-primary" disabled={isLoading} type="submit">{isLoading ? text.generating : text.continue}</button>
             </form>
           )}
         </section>
       )}
 
       {result?.state === "ready" && result.compiledPrompt && (
-        <section className="space-y-4 rounded-2xl border border-emerald-300/40 bg-emerald-300/10 p-5 sm:p-8">
+        <section className="pf-card space-y-4 p-5 sm:p-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-xl font-semibold text-emerald-50">{text.resultTitle}</h2>
+            <h2 className="text-xl font-semibold">{text.resultTitle}</h2>
             <div className="flex flex-wrap gap-2">
-              <button className="rounded-lg border border-emerald-100/50 px-3 py-2 text-sm font-medium text-emerald-50 hover:bg-emerald-100/10 focus:outline-none focus:ring-2 focus:ring-emerald-100" onClick={() => void copyPrompt()} type="button">{copied ? text.copied : text.copy}</button>
-              {result.recordId && <button aria-pressed={isFavorite} className="rounded-lg border border-emerald-100/50 px-3 py-2 text-sm font-medium text-emerald-50 hover:bg-emerald-100/10 focus:outline-none focus:ring-2 focus:ring-emerald-100" onClick={() => void toggleFavorite()} type="button">{isFavorite ? text.unfavorite : text.favorite}</button>}
-              <button className="rounded-lg bg-emerald-200 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-50 disabled:cursor-not-allowed disabled:opacity-60" disabled={isExecuting} onClick={() => void runPrompt()} type="button">{isExecuting ? text.running : executionOutput ? text.runAgain : text.run}</button>
+              <button className="pf-button-secondary" onClick={() => void copyPrompt()} type="button">{copied ? text.copied : text.copy}</button>
+              {result.recordId && <button aria-pressed={isFavorite} className="pf-button-secondary" onClick={() => void toggleFavorite()} type="button">{isFavorite ? text.unfavorite : text.favorite}</button>}
+              <button className="pf-button-primary" disabled={isExecuting} onClick={() => void runPrompt()} type="button">{isExecuting ? text.running : executionOutput ? text.runAgain : text.run}</button>
             </div>
           </div>
-          <pre className="overflow-x-auto whitespace-pre-wrap rounded-xl bg-slate-950/70 p-4 text-sm leading-6 text-slate-100">{result.compiledPrompt}</pre>
-          {executionErrorCode && <p className="rounded-xl border border-rose-400/40 bg-rose-400/10 p-4 text-sm leading-6 text-rose-100" role="alert">{localizedError(language, executionErrorCode, executionErrorDetails)} {text.tryAgain}</p>}
+          <pre className="overflow-x-auto whitespace-pre-wrap rounded-xl border border-[#D8D1C1] bg-[#F4F0E6] p-4 text-sm leading-6">{result.compiledPrompt}</pre>
+          {executionErrorCode && <p className="pf-alert pf-alert-error" role="alert">{localizedError(language, executionErrorCode, executionErrorDetails)} {text.tryAgain}</p>}
           {executionOutput && (
-            <section className="space-y-3 rounded-xl border border-emerald-100/20 bg-slate-950/50 p-4">
+            <section className="space-y-3 rounded-xl border border-[#D8D1C1] bg-[#F4F0E6] p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h3 className="font-semibold text-emerald-50">{text.answerTitle}</h3>
-                <button className="rounded-lg border border-emerald-100/50 px-3 py-2 text-sm font-medium text-emerald-50 hover:bg-emerald-100/10 focus:outline-none focus:ring-2 focus:ring-emerald-100" onClick={() => void copyAnswer()} type="button">{answerCopied ? text.answerCopied : text.copyAnswer}</button>
+                <h3 className="font-semibold">{text.answerTitle}</h3>
+                <button className="pf-button-secondary" onClick={() => void copyAnswer()} type="button">{answerCopied ? text.answerCopied : text.copyAnswer}</button>
               </div>
-              <p className="whitespace-pre-wrap text-sm leading-6 text-slate-100">{executionOutput}</p>
+              <p className="whitespace-pre-wrap text-sm leading-6">{executionOutput}</p>
             </section>
           )}
-          {result.recordId && <div className="flex flex-wrap items-center gap-3 text-sm text-emerald-50"><span>{text.feedback}</span><button aria-label="Positive feedback" className="rounded-lg border border-emerald-100/50 px-3 py-1 hover:bg-emerald-100/10" onClick={() => void sendFeedback("positive")} type="button">👍</button><button aria-label="Negative feedback" className="rounded-lg border border-emerald-100/50 px-3 py-1 hover:bg-emerald-100/10" onClick={() => void sendFeedback("negative")} type="button">👎</button>{feedbackSaved && <span>{text.feedbackSaved}</span>}</div>}
+          {result.recordId && <div className="flex flex-wrap items-center gap-3 text-sm"><span className="pf-muted">{text.feedback}</span><button aria-label="Positive feedback" className="pf-button-secondary !px-3 !py-1" onClick={() => void sendFeedback("positive")} type="button">👍</button><button aria-label="Negative feedback" className="pf-button-secondary !px-3 !py-1" onClick={() => void sendFeedback("negative")} type="button">👎</button>{feedbackSaved && <span className="text-[#40513B]">{text.feedbackSaved}</span>}</div>}
         </section>
       )}
     </section>
