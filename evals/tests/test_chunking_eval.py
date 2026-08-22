@@ -6,6 +6,7 @@ import types
 from pathlib import Path
 
 import pytest
+from app.document_processing.chunking import StructureAwareChunker
 from app.document_processing.models import ChunkingConfig
 
 from evals.src.chunking_eval import (
@@ -127,6 +128,44 @@ def test_debug_embedder_cannot_write_official_results(tmp_path) -> None:
         )
 
 
+def test_debug_hash_embedder_remains_non_official_and_deterministic() -> None:
+    embedder = DebugHashEmbedder()
+
+    assert embedder.is_official is False
+    assert embedder.truncation_rate(["text"]) == 0.0
+    assert embedder.encode(["same text"]) == embedder.encode(["same text"])
+
+
+def test_official_result_metadata_records_runtime_versions(tmp_path) -> None:
+    class OfficialEmbedder:
+        model_name = "Alibaba-NLP/gte-multilingual-base"
+        is_official = True
+
+        def encode(self, texts: list[str]) -> list[list[float]]:
+            return [[] for _ in texts]
+
+        def truncation_rate(self, texts: list[str]) -> float:
+            return 0.0
+
+    save_results(
+        [],
+        dataset_version="v1",
+        embedder=OfficialEmbedder(),
+        output_dir=tmp_path,
+        chunker_configurations={"fixed": {"max_tokens": 500}},
+        runtime_metadata={
+            "torchVersion": "2.11.0",
+            "transformersVersion": "4.57.6",
+            "sentenceTransformersVersion": "5.6.0",
+            "cudaDevice": "A100",
+        },
+    )
+
+    payload = json.loads((tmp_path / "chunking_results_v1.json").read_text())
+    assert payload["runtime"]["transformersVersion"] == "4.57.6"
+    assert payload["chunkerConfigurations"]["fixed"]["max_tokens"] == 500
+
+
 def test_sentence_transformer_remote_code_defaults_to_false(monkeypatch) -> None:
     calls: list[tuple[str, bool]] = []
 
@@ -209,5 +248,21 @@ def test_notebook_cells_are_valid_python_and_configure_production_import_path() 
     assert "sys.path.insert(0, str(import_root))" in setup
     assert "fetch', '--all', '--tags', '--prune" in setup
     assert "Stale evaluation modules are already loaded" in setup
+    assert "'transformers==4.57.6'" in setup
+    assert "'sentence-transformers==5.6.0'" in setup
+    assert setup.index("transformers==4.57.6") < setup.index("import transformers")
+    assert setup.index("import sentence_transformers") < setup.index("api_root =")
+    assert "assert transformers.__version__ == '4.57.6'" in setup
+    assert "GPU_NAME = torch.cuda.get_device_name(0)" in setup
+    markdown = "".join(
+        "".join(cell["source"])
+        for cell in notebook["cells"]
+        if cell["cell_type"] == "markdown"
+    )
+    assert "Runtime → Disconnect and delete runtime" in markdown
     assert "inspect.signature(SentenceTransformerEmbedder.__init__)" in initialization
     assert "trust_remote_code=True" in initialization
+
+
+def test_production_chunker_is_imported_from_the_api_source_of_truth() -> None:
+    assert StructureAwareChunker.__module__ == "app.document_processing.chunking"

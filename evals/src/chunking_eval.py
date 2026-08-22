@@ -266,6 +266,7 @@ def save_results(
     embedder: EvaluationEmbedder,
     output_dir: Path,
     chunker_configurations: dict[str, dict[str, int]],
+    runtime_metadata: dict[str, str] | None = None,
 ) -> None:
     if not embedder.is_official:
         raise ValueError(
@@ -277,6 +278,7 @@ def save_results(
         "datasetVersion": dataset_version,
         "embeddingModel": embedder.model_name,
         "chunkerConfigurations": chunker_configurations,
+        "runtime": runtime_metadata or {},
         "timestamp": datetime.now(UTC).isoformat(),
         "results": [asdict(result) for result in results],
     }
