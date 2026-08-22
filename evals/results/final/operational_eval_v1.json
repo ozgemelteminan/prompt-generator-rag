@@ -1,0 +1,93 @@
+{
+  "experimentVersion": "m6.4",
+  "deterministicLocal": {
+    "status": "completed",
+    "latency": {
+      "query_embedding": {
+        "count": 1,
+        "mean_ms": 0.005458015948534012,
+        "p50_ms": 0.005458015948534012,
+        "p95_ms": 0.005458015948534012,
+        "min_ms": 0.005458015948534012,
+        "max_ms": 0.005458015948534012
+      },
+      "retrieval": {
+        "count": 1,
+        "mean_ms": 2.165792044252157,
+        "p50_ms": 2.165792044252157,
+        "p95_ms": 2.165792044252157,
+        "min_ms": 2.165792044252157,
+        "max_ms": 2.165792044252157
+      },
+      "context_build": {
+        "count": 1,
+        "mean_ms": 0.03445800393819809,
+        "p50_ms": 0.03445800393819809,
+        "p95_ms": 0.03445800393819809,
+        "min_ms": 0.03445800393819809,
+        "max_ms": 0.03445800393819809
+      },
+      "generation": {
+        "count": 1,
+        "mean_ms": 0.002333894371986389,
+        "p50_ms": 0.002333894371986389,
+        "p95_ms": 0.002333894371986389,
+        "min_ms": 0.002333894371986389,
+        "max_ms": 0.002333894371986389
+      },
+      "total_ask": {
+        "count": 1,
+        "mean_ms": 2.2369171492755413,
+        "p50_ms": 2.2369171492755413,
+        "p95_ms": 2.2369171492755413,
+        "min_ms": 2.2369171492755413,
+        "max_ms": 2.2369171492755413
+      }
+    },
+    "successfulAsk": {
+      "query_embedding_calls": 1,
+      "retrieval_calls": 1,
+      "context_build_calls": 1,
+      "generation_calls": 1,
+      "passed": true
+    },
+    "insufficientEvidence": {
+      "query_embedding_calls": 1,
+      "retrieval_calls": 1,
+      "context_build_calls": 1,
+      "generation_calls": 0,
+      "passed": true
+    },
+    "operationalChecks": {
+      "context_budget_bounded": true,
+      "retrieval_limit_bounded": true,
+      "timeout_configured": true,
+      "public_sources_exclude_vectors_and_storage": true,
+      "provider_failure_sanitized": true
+    },
+    "tokenCost": {
+      "input_tokens": null,
+      "output_tokens": null,
+      "total_tokens": null,
+      "generation_calls": 1,
+      "estimated_cost": null,
+      "currency": null,
+      "price_assumption": null
+    }
+  },
+  "realRun": {
+    "status": "not_run",
+    "command": "PYTHONPATH=apps/api:packages/prompt-engine python -m evals.src.operational_eval --mode real --query '<question>' --document-id '<embedded-document-id>'",
+    "requirements": [
+      "DATABASE_URL to migrated PostgreSQL + pgvector",
+      "embedded scoped document",
+      "OPENAI_API_KEY",
+      "local E5 model runtime"
+    ]
+  },
+  "limitations": [
+    "Local timings are deterministic-fixture measurements, not production latency targets.",
+    "Current OpenAI execution results do not expose usage metadata through the provider-neutral adapter, so token totals and cost remain unavailable.",
+    "No provider prices are hardcoded; an estimate requires an explicit external price assumption."
+  ]
+}
