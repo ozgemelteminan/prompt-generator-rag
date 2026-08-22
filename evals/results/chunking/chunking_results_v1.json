@@ -1,7 +1,269 @@
 {
-  "status": "requires_real_model_run",
   "experimentVersion": "m4.1",
   "datasetVersion": "chunking-eval-v1",
   "embeddingModel": "Alibaba-NLP/gte-multilingual-base",
-  "reason": "Official results are intentionally absent until the Colab notebook runs the real embedding model."
+  "chunkerConfigurations": {
+    "fixed": {
+      "max_tokens": 500,
+      "overlap_tokens": 40
+    },
+    "recursive": {
+      "target_tokens": 350,
+      "max_tokens": 500
+    },
+    "production_structure_aware": {
+      "target_tokens": 350,
+      "max_tokens": 500,
+      "overlap_tokens": 40
+    }
+  },
+  "runtime": {
+    "torchVersion": "2.11.0+cpu",
+    "transformersVersion": "4.57.6",
+    "sentenceTransformersVersion": "5.6.0",
+    "cudaDevice": "CPU"
+  },
+  "timestamp": "2026-08-22T10:43:09.868470+00:00",
+  "results": [
+    {
+      "name": "fixed",
+      "chunk_statistics": {
+        "chunk_count": 6,
+        "mean_tokens": 64.66666666666667,
+        "median_tokens": 61.0,
+        "min_tokens": 58,
+        "max_tokens": 79,
+        "std_tokens": 7.586537784494028,
+        "overlap_ratio": 0.0,
+        "embedding_truncation_rate": 0.0
+      },
+      "overall": {
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.8440476190476192,
+        "ndcg_at_10": 0.7791640447811415
+      },
+      "by_category": {
+        "cross_paragraph": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 0.7638888888888888,
+          "ndcg_at_10": 0.5038717483361922
+        },
+        "factual": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 0.9583333333333334,
+          "ndcg_at_10": 0.9692441461309548
+        },
+        "heading_dependent": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 0.8666666666666667,
+          "ndcg_at_10": 0.5504889460994313
+        },
+        "morphology_heavy": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 0.7222222222222222,
+          "ndcg_at_10": 0.7291677833180623
+        },
+        "paraphrase": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 0.7222222222222222,
+          "ndcg_at_10": 0.793643251190486
+        },
+        "terminology_mismatch": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 0.9166666666666666,
+          "ndcg_at_10": 0.9384882922619097
+        }
+      },
+      "by_language": {
+        "en": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 0.7992063492063493,
+          "ndcg_at_10": 0.7608368390804549
+        },
+        "tr": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 0.888888888888889,
+          "ndcg_at_10": 0.7974912504818283
+        }
+      }
+    },
+    {
+      "name": "recursive",
+      "chunk_statistics": {
+        "chunk_count": 6,
+        "mean_tokens": 64.66666666666667,
+        "median_tokens": 61.0,
+        "min_tokens": 58,
+        "max_tokens": 79,
+        "std_tokens": 7.586537784494028,
+        "overlap_ratio": 0.0,
+        "embedding_truncation_rate": 0.0
+      },
+      "overall": {
+        "recall_at_5": 0.9761904761904762,
+        "recall_at_10": 1.0,
+        "hit_rate_at_5": 0.9761904761904762,
+        "mrr": 0.8313492063492063,
+        "ndcg_at_10": 0.7699292704387682
+      },
+      "by_category": {
+        "cross_paragraph": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 0.7638888888888888,
+          "ndcg_at_10": 0.5038717483361922
+        },
+        "factual": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 0.9583333333333334,
+          "ndcg_at_10": 0.9692441461309548
+        },
+        "heading_dependent": {
+          "recall_at_5": 0.8333333333333334,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 0.8333333333333334,
+          "mrr": 0.8611111111111112,
+          "ndcg_at_10": 0.5473572334409094
+        },
+        "morphology_heavy": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 0.6944444444444445,
+          "ndcg_at_10": 0.7073461577228194
+        },
+        "paraphrase": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 0.75,
+          "ndcg_at_10": 0.8154648767857288
+        },
+        "terminology_mismatch": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 0.8333333333333334,
+          "ndcg_at_10": 0.8769765845238192
+        }
+      },
+      "by_language": {
+        "en": {
+          "recall_at_5": 0.9523809523809523,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 0.9523809523809523,
+          "mrr": 0.7738095238095238,
+          "ndcg_at_10": 0.7423672903957084
+        },
+        "tr": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 0.888888888888889,
+          "ndcg_at_10": 0.7974912504818283
+        }
+      }
+    },
+    {
+      "name": "production_structure_aware",
+      "chunk_statistics": {
+        "chunk_count": 12,
+        "mean_tokens": 32.333333333333336,
+        "median_tokens": 31.5,
+        "min_tokens": 24,
+        "max_tokens": 44,
+        "std_tokens": 6.073622386096199,
+        "overlap_ratio": 0.0,
+        "embedding_truncation_rate": 0.0
+      },
+      "overall": {
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "hit_rate_at_5": 1.0,
+        "mrr": 0.8988095238095238,
+        "ndcg_at_10": 0.8178030239799219
+      },
+      "by_category": {
+        "cross_paragraph": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 0.9166666666666666,
+          "ndcg_at_10": 0.6399069297160626
+        },
+        "factual": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 0.9583333333333334,
+          "ndcg_at_10": 0.9692441461309548
+        },
+        "heading_dependent": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_10": 0.6131471927654584
+        },
+        "morphology_heavy": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 0.9166666666666666,
+          "ndcg_at_10": 0.874012824389486
+        },
+        "paraphrase": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 0.7083333333333334,
+          "ndcg_at_10": 0.782089344202718
+        },
+        "terminology_mismatch": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 0.8333333333333334,
+          "ndcg_at_10": 0.8769765845238192
+        }
+      },
+      "by_language": {
+        "en": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 0.9047619047619048,
+          "ndcg_at_10": 0.8191715319465991
+        },
+        "tr": {
+          "recall_at_5": 1.0,
+          "recall_at_10": 1.0,
+          "hit_rate_at_5": 1.0,
+          "mrr": 0.8928571428571429,
+          "ndcg_at_10": 0.8164345160132449
+        }
+      }
+    }
+  ]
 }
