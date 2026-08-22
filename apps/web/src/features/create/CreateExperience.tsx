@@ -18,7 +18,7 @@ import { taskPresets } from "./presets";
 
 const content = {
   tr: {
-    eyebrow: "PromptForge",
+    eyebrow: "Prompt Generator",
     title: "Ne yapmak istediğinizi anlatın.",
     description: "İhtiyacınızı kendi kelimelerinizle yazın. Birkaç ayrıntı gerekirse birlikte tamamlarız.",
     language: "Yanıt dili",
@@ -50,7 +50,7 @@ const content = {
     clarificationLimit: "Daha fazla ayrıntı gerekirse isteğinizi güncelleyip yeniden oluşturun.",
   },
   en: {
-    eyebrow: "PromptForge",
+    eyebrow: "Prompt Generator",
     title: "Tell us what you want to do.",
     description: "Describe your need in your own words. We’ll ask for a small detail only when it helps.",
     language: "Response language",

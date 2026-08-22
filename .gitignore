@@ -26,4 +26,6 @@ venv/
 coverage.xml
 htmlcov/
 *.tsbuildinfo
+*.sqlite
+*.db
 data/uploads/

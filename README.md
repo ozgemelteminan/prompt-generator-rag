@@ -1,6 +1,6 @@
-# PromptForge
+# Prompt Generator
 
-PromptForge is a bilingual Turkish/English product that turns an underspecified
+Prompt Generator is a bilingual Turkish/English product that turns an underspecified
 request into a structured, reusable prompt. Its main product is a **structured
 AI Prompt Generator**. Document-grounded question answering is an advanced,
 separate subsystem that lets users ask questions against prepared documents with
@@ -17,7 +17,7 @@ For a short product walkthrough, see [the demo guide](docs/DEMO.md). The
 ## Project overview
 
 Writing a useful prompt usually requires translating an informal request into a
-clear objective, constraints, audience, format, and language. PromptForge makes
+clear objective, constraints, audience, format, and language. Prompt Generator makes
 that work visible and repeatable instead of treating a model call as the product.
 Users can start from free text or a small task preset, refine only material gaps,
 copy the compiled prompt, and optionally run it. They can also prepare documents

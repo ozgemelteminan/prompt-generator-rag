@@ -3,12 +3,14 @@
 .env.*
 !.env.example
 node_modules/
-apps/web/node_modules/
-apps/web/.next/
-apps/web/*.tsbuildinfo
+.pnpm-store/
+**/.next/
+**/*.tsbuildinfo
 **/__pycache__/
 **/.pytest_cache/
 **/.ruff_cache/
 **/*.py[cod]
+*.sqlite
+*.db
 data/uploads/
 evals/results/

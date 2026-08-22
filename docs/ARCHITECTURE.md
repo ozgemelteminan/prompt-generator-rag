@@ -1,6 +1,6 @@
 # Architecture
 
-PromptForge keeps prompt construction and document intelligence as distinct
+Prompt Generator keeps prompt construction and document intelligence as distinct
 application paths behind the same FastAPI boundary.
 
 ```mermaid

@@ -1,6 +1,6 @@
-# PromptForge portfolio summary
+# Prompt Generator portfolio summary
 
-PromptForge is a bilingual structured AI Prompt Generator that makes intent,
+Prompt Generator is a bilingual structured AI product that makes intent,
 clarifications, and deterministic prompt compilation explicit, then extends the
 same product with document-grounded answers and verifiable citations.
 

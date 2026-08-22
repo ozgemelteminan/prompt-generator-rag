@@ -1,6 +1,6 @@
 # Deployment
 
-PromptForge is deployed as a web container, API container, and PostgreSQL 16
+Prompt Generator is deployed as a web container, API container, and PostgreSQL 16
 container with pgvector. Alembic migrations are the only schema source of truth.
 This guide is provider-neutral and does not perform an external deployment.
 

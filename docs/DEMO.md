@@ -2,7 +2,7 @@
 
 ## Portfolio summary
 
-**PromptForge is a bilingual product that converts vague requests into a
+**Prompt Generator is a bilingual product that converts vague requests into a
 canonical PromptSpec and a deterministic, reusable prompt, with optional
 document-grounded answers and citations.**
 
