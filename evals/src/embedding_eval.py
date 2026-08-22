@@ -26,6 +26,42 @@ TURKISH_E5_INSTRUCTION = (
     "that best answer the query"
 )
 
+QUALITY_CSV_FIELDS = (
+    "recall_at_5",
+    "recall_at_10",
+    "mrr",
+    "ndcg_at_10",
+    "hit_rate_at_5",
+    "required_block_coverage_at_5",
+    "required_block_coverage_at_10",
+)
+EFFICIENCY_CSV_FIELDS = (
+    "model_load_seconds",
+    "passage_embedding_seconds",
+    "query_embedding_seconds",
+    "peak_cuda_memory_bytes",
+    "embedding_dimension",
+    "passage_throughput",
+    "query_throughput",
+    "truncation_rate",
+)
+CSV_FIELDNAMES = (
+    "model_key",
+    "model_id",
+    "is_official",
+    *QUALITY_CSV_FIELDS,
+    *EFFICIENCY_CSV_FIELDS,
+)
+_EFFICIENCY_RESULT_FIELDS = {
+    "model_load_seconds",
+    "passage_embedding_seconds",
+    "query_embedding_seconds",
+    "peak_cuda_memory_bytes",
+    "embedding_dimension",
+    "passages_per_second",
+    "queries_per_second",
+}
+
 
 @dataclass(frozen=True)
 class EmbeddingModelSpec:
@@ -136,7 +172,7 @@ class SentenceTransformerEmbeddingAdapter:
 
     def efficiency(self) -> dict[str, float | int]:
         return {
-            "embedding_dimension": self._model.get_sentence_embedding_dimension(),
+            "embedding_dimension": self._model.get_embedding_dimension(),
             "model_load_seconds": self._load_seconds,
             "passage_embedding_seconds": self._passage_seconds,
             "query_embedding_seconds": self._query_seconds,
@@ -241,6 +277,7 @@ def save_embedding_results(
     if any(not result.is_official for result in results):
         raise ValueError("Debug embeddings must not write official benchmark results.")
     output_dir.mkdir(parents=True, exist_ok=True)
+    csv_rows = [_result_csv_row(result) for result in results]
     payload = {
         "experimentVersion": "m4.2",
         "datasetVersion": dataset_version,
@@ -256,28 +293,37 @@ def save_embedding_results(
     (output_dir / "embedding_results_v1.json").write_text(
         json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
     )
-    fields = [
-        "model",
-        "recall_at_5",
-        "recall_at_10",
-        "mrr",
-        "ndcg_at_10",
-        "hit_rate_at_5",
-        "required_block_coverage_at_5",
-        "required_block_coverage_at_10",
-        "embedding_dimension",
-        "queries_per_second",
-        "passages_per_second",
-    ]
     with (output_dir / "embedding_results_v1.csv").open(
         "w", encoding="utf-8", newline=""
     ) as file:
-        writer = csv.DictWriter(file, fieldnames=fields)
+        writer = csv.DictWriter(file, fieldnames=CSV_FIELDNAMES)
         writer.writeheader()
-        for result in results:
-            writer.writerow(
-                {"model": result.model_id, **result.metrics, **result.efficiency}
-            )
+        writer.writerows(csv_rows)
+
+
+def _result_csv_row(
+    result: EmbeddingBenchmarkResult,
+) -> dict[str, str | float | int | bool | None]:
+    unexpected_metrics = set(result.metrics) - set(QUALITY_CSV_FIELDS)
+    unexpected_efficiency = set(result.efficiency) - _EFFICIENCY_RESULT_FIELDS
+    if unexpected_metrics or unexpected_efficiency:
+        unexpected = sorted(unexpected_metrics | unexpected_efficiency)
+        raise ValueError(f"Result fields are missing from the CSV schema: {unexpected}")
+
+    return {
+        "model_key": result.model_key,
+        "model_id": result.model_id,
+        "is_official": result.is_official,
+        **{field: result.metrics.get(field) for field in QUALITY_CSV_FIELDS},
+        "model_load_seconds": result.efficiency.get("model_load_seconds"),
+        "passage_embedding_seconds": result.efficiency.get("passage_embedding_seconds"),
+        "query_embedding_seconds": result.efficiency.get("query_embedding_seconds"),
+        "peak_cuda_memory_bytes": result.efficiency.get("peak_cuda_memory_bytes"),
+        "embedding_dimension": result.efficiency.get("embedding_dimension"),
+        "passage_throughput": result.efficiency.get("passages_per_second"),
+        "query_throughput": result.efficiency.get("queries_per_second"),
+        "truncation_rate": result.truncation_rate,
+    }
 
 
 def _ranked_block_ids(

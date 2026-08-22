@@ -1,4 +1,5 @@
 import ast
+import csv
 import json
 from pathlib import Path
 
@@ -13,6 +14,7 @@ from evals.src.dataset import (
     load_dataset,
 )
 from evals.src.embedding_eval import (
+    CSV_FIELDNAMES,
     E5_INSTRUCTION,
     TURKISH_E5_INSTRUCTION,
     EmbeddingBenchmarkResult,
@@ -154,11 +156,27 @@ def test_embedding_result_serialization_writes_machine_readable_output(
         "fake",
         "fake/model",
         True,
-        {"mrr": 1.0},
+        {
+            "recall_at_5": 0.5,
+            "recall_at_10": 1.0,
+            "mrr": 1.0,
+            "ndcg_at_10": 1.0,
+            "hit_rate_at_5": 1.0,
+            "required_block_coverage_at_5": 0.5,
+            "required_block_coverage_at_10": 1.0,
+        },
         {"tr": {}},
         {"factual": {}},
-        {"embedding_dimension": 2},
-        0.0,
+        {
+            "model_load_seconds": 1.0,
+            "passage_embedding_seconds": 2.0,
+            "query_embedding_seconds": 3.0,
+            "peak_cuda_memory_bytes": 4,
+            "embedding_dimension": 5,
+            "passages_per_second": 6.0,
+            "queries_per_second": 7.0,
+        },
+        0.25,
     )
     save_embedding_results(
         [result],
@@ -167,8 +185,56 @@ def test_embedding_result_serialization_writes_machine_readable_output(
         runtime_metadata={"torchVersion": "x"},
     )
     payload = json.loads((tmp_path / "embedding_results_v1.json").read_text())
+    with (tmp_path / "embedding_results_v1.csv").open(newline="") as file:
+        rows = list(csv.DictReader(file))
+
     assert payload["runtime"]["torchVersion"] == "x"
     assert payload["results"][0]["model_id"] == "fake/model"
+    assert tuple(rows[0]) == CSV_FIELDNAMES
+    assert rows[0]["model_id"] == payload["results"][0]["model_id"]
+    assert float(rows[0]["mrr"]) == payload["results"][0]["metrics"]["mrr"]
+    assert (
+        float(rows[0]["model_load_seconds"])
+        == payload["results"][0]["efficiency"]["model_load_seconds"]
+    )
+    assert (
+        float(rows[0]["passage_throughput"])
+        == payload["results"][0]["efficiency"]["passages_per_second"]
+    )
+    assert (
+        float(rows[0]["query_throughput"])
+        == payload["results"][0]["efficiency"]["queries_per_second"]
+    )
+    assert float(rows[0]["truncation_rate"]) == payload["results"][0]["truncation_rate"]
+
+
+def test_embedding_result_serialization_blanks_missing_efficiency_values_and_updates(
+    tmp_path,
+) -> None:
+    first = EmbeddingBenchmarkResult(
+        "first", "first/model", True, {}, {}, {}, {"embedding_dimension": 2}, 0.0
+    )
+    second = EmbeddingBenchmarkResult(
+        "second", "second/model", True, {}, {}, {}, {}, 0.0
+    )
+    save_embedding_results(
+        [first], dataset_version="v1", output_dir=tmp_path, runtime_metadata={}
+    )
+    save_embedding_results(
+        [first, second], dataset_version="v1", output_dir=tmp_path, runtime_metadata={}
+    )
+
+    payload = json.loads((tmp_path / "embedding_results_v1.json").read_text())
+    with (tmp_path / "embedding_results_v1.csv").open(newline="") as file:
+        rows = list(csv.DictReader(file))
+
+    assert [result["model_key"] for result in payload["results"]] == [
+        "first",
+        "second",
+    ]
+    assert [row["model_key"] for row in rows] == ["first", "second"]
+    assert rows[0]["model_load_seconds"] == ""
+    assert rows[1]["embedding_dimension"] == ""
 
 
 def test_retrieval_dataset_and_notebook_are_static_and_valid() -> None:
@@ -196,3 +262,6 @@ def test_retrieval_dataset_and_notebook_are_static_and_valid() -> None:
         else True
     )
     assert "frozen_production_chunks(dataset)" in code[1]
+    assert "'query_throughput'" in code[2]
+    assert "'passage_throughput'" in code[2]
+    assert "('query_throughput', 'general bilingual speed'" in code[2]
