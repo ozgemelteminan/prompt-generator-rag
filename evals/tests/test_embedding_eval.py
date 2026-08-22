@@ -254,7 +254,8 @@ def test_retrieval_dataset_and_notebook_are_static_and_valid() -> None:
         if cell["cell_type"] == "code"
     ]
     for cell in code:
-        ast.parse(cell)
+        if not cell.lstrip().startswith("!"):
+            ast.parse(cell)
     assert "transformers==4.57.6" in code[0]
     assert (
         code[0].index("transformers==4.57.6") < code[0].index("from evals")

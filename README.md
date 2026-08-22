@@ -383,6 +383,18 @@ separate category strengths to inform a future hybrid experiment. Run
 in a fresh Colab runtime after setting its repository URL/ref. It writes only real-run
 artifacts to `evals/results/retrieval/`; committed files are placeholders.
 
+## Hybrid retrieval benchmark (M4.4)
+
+M4.4 compares the same frozen E5 dense and BM25 sparse rankings with a third,
+evaluation-only Reciprocal Rank Fusion baseline. Fusion uses rank positions only:
+`1 / (k + rank)`, with `k=60` and the top 20 candidates from each retriever. It does
+not rerank or add raw dense and sparse scores. The notebook reports overall,
+Turkish/English, category, delta, and per-query complementary-signal diagnostics.
+
+Run [04_hybrid_rrf.ipynb](/Users/ozge/Documents/ChatGPT/prompt-generator-rag/notebooks/04_hybrid_rrf.ipynb)
+in a fresh Colab runtime after setting its repository URL/ref. It writes only real-run
+artifacts to `evals/results/hybrid/`; committed files are placeholders.
+
 ## Prerequisites
 
 - Node.js 20+ and [pnpm](https://pnpm.io/)

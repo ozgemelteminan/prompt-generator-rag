@@ -48,7 +48,7 @@ class RetrievalBenchmarkResult:
     by_language: dict[str, dict[str, float]]
     by_category: dict[str, dict[str, float]]
     efficiency: dict[str, float | int]
-    parameters: dict[str, float | str]
+    parameters: dict[str, float | int | str]
 
 
 class Bm25Retriever:
@@ -110,26 +110,15 @@ def run_dense_baseline(
     chunks: tuple[EvaluationChunk, ...],
     adapter: EmbeddingAdapter,
 ) -> RetrievalBenchmarkResult:
-    passage_embeddings = adapter.encode_passages([chunk.text for chunk in chunks])
-    started = time.perf_counter()
-    query_embeddings = adapter.encode_queries([query.text for query in dataset.queries])
-    query_embedding_seconds = time.perf_counter() - started
-    started = time.perf_counter()
-    rankings = [
-        _dense_ranking(chunks, passage_embeddings, query_embedding)
-        for query_embedding in query_embeddings
-    ]
-    query_retrieval_seconds = time.perf_counter() - started
-    return _build_result(
+    ranked_indices, efficiency = dense_ranked_indices(
+        dataset, chunks=chunks, adapter=adapter
+    )
+    return build_retrieval_result(
         retriever_key="dense_e5",
         retriever="Dense — intfloat/multilingual-e5-large-instruct",
         dataset=dataset,
-        rankings=rankings,
-        efficiency={
-            "query_embedding_seconds": query_embedding_seconds,
-            "query_retrieval_seconds": query_retrieval_seconds,
-            "chunk_count": len(chunks),
-        },
+        rankings=block_rankings(chunks, ranked_indices),
+        efficiency=efficiency,
         parameters={"model_id": adapter.spec.model_id},
     )
 
@@ -141,25 +130,13 @@ def run_bm25_baseline(
     k1: float = BM25_K1,
     b: float = BM25_B,
 ) -> RetrievalBenchmarkResult:
-    started = time.perf_counter()
-    retriever = Bm25Retriever([chunk.text for chunk in chunks], k1=k1, b=b)
-    index_build_seconds = time.perf_counter() - started
-    started = time.perf_counter()
-    rankings = [
-        [chunks[index].source_block_ids for index in retriever.rank(query.text)]
-        for query in dataset.queries
-    ]
-    query_retrieval_seconds = time.perf_counter() - started
-    return _build_result(
+    ranked_indices, efficiency = bm25_ranked_indices(dataset, chunks=chunks, k1=k1, b=b)
+    return build_retrieval_result(
         retriever_key="sparse_bm25",
         retriever="Sparse — BM25",
         dataset=dataset,
-        rankings=rankings,
-        efficiency={
-            "index_build_seconds": index_build_seconds,
-            "query_retrieval_seconds": query_retrieval_seconds,
-            "chunk_count": len(chunks),
-        },
+        rankings=block_rankings(chunks, ranked_indices),
+        efficiency=efficiency,
         parameters={"bm25_k1": k1, "bm25_b": b, "tokenizer": "unicode_casefold"},
     )
 
@@ -196,14 +173,69 @@ def save_retrieval_results(
         writer.writerows(rows)
 
 
-def _build_result(
+def dense_ranked_indices(
+    dataset: EvaluationDataset,
+    *,
+    chunks: tuple[EvaluationChunk, ...],
+    adapter: EmbeddingAdapter,
+    candidate_depth: int | None = None,
+) -> tuple[list[list[int]], dict[str, float | int]]:
+    passage_embeddings = adapter.encode_passages([chunk.text for chunk in chunks])
+    started = time.perf_counter()
+    query_embeddings = adapter.encode_queries([query.text for query in dataset.queries])
+    query_embedding_seconds = time.perf_counter() - started
+    started = time.perf_counter()
+    rankings = [
+        _dense_ranked_indices(
+            chunks, passage_embeddings, query_embedding, candidate_depth
+        )
+        for query_embedding in query_embeddings
+    ]
+    return rankings, {
+        "query_embedding_seconds": query_embedding_seconds,
+        "query_retrieval_seconds": time.perf_counter() - started,
+        "chunk_count": len(chunks),
+    }
+
+
+def bm25_ranked_indices(
+    dataset: EvaluationDataset,
+    *,
+    chunks: tuple[EvaluationChunk, ...],
+    k1: float = BM25_K1,
+    b: float = BM25_B,
+    candidate_depth: int | None = None,
+) -> tuple[list[list[int]], dict[str, float | int]]:
+    started = time.perf_counter()
+    retriever = Bm25Retriever([chunk.text for chunk in chunks], k1=k1, b=b)
+    index_build_seconds = time.perf_counter() - started
+    started = time.perf_counter()
+    rankings = [
+        retriever.rank(query.text)[:candidate_depth] for query in dataset.queries
+    ]
+    return rankings, {
+        "index_build_seconds": index_build_seconds,
+        "query_retrieval_seconds": time.perf_counter() - started,
+        "chunk_count": len(chunks),
+    }
+
+
+def block_rankings(
+    chunks: tuple[EvaluationChunk, ...], rankings: list[list[int]]
+) -> list[list[frozenset[str]]]:
+    return [
+        [chunks[index].source_block_ids for index in ranking] for ranking in rankings
+    ]
+
+
+def build_retrieval_result(
     *,
     retriever_key: str,
     retriever: str,
     dataset: EvaluationDataset,
     rankings: list[list[frozenset[str]]],
     efficiency: dict[str, float | int],
-    parameters: dict[str, float | str],
+    parameters: dict[str, float | int | str],
 ) -> RetrievalBenchmarkResult:
     relevant_sets = [query.relevant_block_ids for query in dataset.queries]
     return RetrievalBenchmarkResult(
@@ -266,16 +298,21 @@ def _mean_coverage(
     )
 
 
-def _dense_ranking(
+def _dense_ranked_indices(
     chunks: tuple[EvaluationChunk, ...],
     passage_embeddings: list[list[float]],
     query_embedding: list[float],
-) -> list[frozenset[str]]:
+    candidate_depth: int | None,
+) -> list[int]:
     scored = sorted(
-        zip(chunks, passage_embeddings, strict=True),
-        key=lambda item: (-_cosine(query_embedding, item[1]), item[0].chunk_index),
+        enumerate(zip(chunks, passage_embeddings, strict=True)),
+        key=lambda item: (
+            -_cosine(query_embedding, item[1][1]),
+            item[1][0].document_id,
+            item[1][0].chunk_index,
+        ),
     )
-    return [chunk.source_block_ids for chunk, _ in scored]
+    return [index for index, _ in scored[:candidate_depth]]
 
 
 def _cosine(left: list[float], right: list[float]) -> float:

@@ -1,0 +1,15 @@
+{
+  "status": "requires_real_model_run",
+  "experimentVersion": "m4.4",
+  "datasetVersion": "retrieval-eval-v1",
+  "retrievers": [
+    "Dense — intfloat/multilingual-e5-large-instruct",
+    "Sparse — BM25",
+    "Hybrid — Dense + BM25 RRF"
+  ],
+  "rrf": {
+    "k": 60,
+    "candidateDepth": 20
+  },
+  "reason": "Official hybrid results require the Colab notebook and are intentionally absent."
+}
