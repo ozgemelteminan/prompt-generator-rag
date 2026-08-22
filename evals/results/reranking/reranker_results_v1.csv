@@ -1,0 +1,1 @@
+retriever_key,retriever,recall_at_5,recall_at_10,mrr,ndcg_at_10,hit_rate_at_5,required_block_coverage_at_5,required_block_coverage_at_10,candidate_depth,reranker_model_id,model_load_seconds,total_reranking_seconds,pairs_scored,pairs_per_second,peak_cuda_memory_bytes

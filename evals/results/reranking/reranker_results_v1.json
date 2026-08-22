@@ -1,0 +1,8 @@
+{
+  "status": "requires_real_model_run",
+  "experimentVersion": "m4.5",
+  "datasetVersion": "retrieval-eval-v1",
+  "reranker": "BAAI/bge-reranker-v2-m3",
+  "candidateDepth": 20,
+  "reason": "Official reranker results require the Colab notebook and are intentionally absent."
+}

@@ -395,6 +395,18 @@ Run [04_hybrid_rrf.ipynb](/Users/ozge/Documents/ChatGPT/prompt-generator-rag/not
 in a fresh Colab runtime after setting its repository URL/ref. It writes only real-run
 artifacts to `evals/results/hybrid/`; committed files are placeholders.
 
+## Multilingual reranker benchmark (M4.5)
+
+M4.5 compares dense and hybrid RRF top-20 pools before and after the evaluation-only
+`BAAI/bge-reranker-v2-m3` cross-encoder. After reranking, only cross-encoder relevance
+scores determine the final order; prior dense, BM25, and RRF scores are not mixed in.
+It records quality, language/category breakdowns, pair-scoring efficiency, and
+per-query rescue/harm diagnostics.
+
+Run [05_reranker_benchmark.ipynb](/Users/ozge/Documents/ChatGPT/prompt-generator-rag/notebooks/05_reranker_benchmark.ipynb)
+in a fresh Colab runtime after setting its repository URL/ref. It writes only real-run
+artifacts to `evals/results/reranking/`; committed files are placeholders.
+
 ## Prerequisites
 
 - Node.js 20+ and [pnpm](https://pnpm.io/)
