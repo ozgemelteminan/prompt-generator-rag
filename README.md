@@ -368,6 +368,21 @@ general bilingual production winner from its Turkish-language results.
 
 Run [02_embedding_benchmark.ipynb](/Users/ozge/Documents/ChatGPT/prompt-generator-rag/notebooks/02_embedding_benchmark.ipynb) in a fresh Colab runtime after setting its repository URL/ref. It uses the same pinned compatible runtime as M4.1, loads one model at a time, writes results incrementally to `evals/results/embeddings/`, and releases CUDA memory between models. No official model results are committed.
 
+## Sparse vs dense retrieval benchmark (M4.3)
+
+M4.3 compares two separate baselines over the exact frozen M4.2 chunks and
+`retrieval-eval-v1` labels: dense `intfloat/multilingual-e5-large-instruct` using the
+existing model adapter, and an evaluation-only in-memory BM25 lexical retriever. BM25
+uses deterministic Unicode case-folded word tokens (including Turkish characters), with
+`k1=1.5` and `b=0.75`; it has no stemming or language-specific analyzer.
+
+Both paths reuse the centralized retrieval metrics and produce overall, Turkish/English,
+and category breakdowns. They are deliberately not fused; the notebook identifies their
+separate category strengths to inform a future hybrid experiment. Run
+[03_sparse_dense_baselines.ipynb](/Users/ozge/Documents/ChatGPT/prompt-generator-rag/notebooks/03_sparse_dense_baselines.ipynb)
+in a fresh Colab runtime after setting its repository URL/ref. It writes only real-run
+artifacts to `evals/results/retrieval/`; committed files are placeholders.
+
 ## Prerequisites
 
 - Node.js 20+ and [pnpm](https://pnpm.io/)

@@ -1,0 +1,10 @@
+{
+  "status": "requires_real_model_run",
+  "experimentVersion": "m4.3",
+  "datasetVersion": "retrieval-eval-v1",
+  "retrievers": [
+    "Dense — intfloat/multilingual-e5-large-instruct",
+    "Sparse — BM25"
+  ],
+  "reason": "Official sparse and dense results require the Colab notebook and are intentionally absent."
+}

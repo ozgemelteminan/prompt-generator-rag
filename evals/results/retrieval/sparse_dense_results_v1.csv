@@ -1,0 +1,1 @@
+retriever_key,retriever,recall_at_5,recall_at_10,mrr,ndcg_at_10,hit_rate_at_5,required_block_coverage_at_5,required_block_coverage_at_10,index_build_seconds,query_embedding_seconds,query_retrieval_seconds,chunk_count,bm25_k1,bm25_b
